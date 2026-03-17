@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Loan Applications — Aurelius Staff</title>
+<link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">STAFF HUB</div></div></div>
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+      <div class="s-user-name" th:text="${staff.fullName}">Sarah</div>
+      <div class="s-user-tier" th:text="${staff.role.name().replace('_',' ')}">MANAGER</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">OPERATIONS</div>
+      <a href="/staff/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="/staff/applications" class="nav-item"><span class="nav-icon">📋</span> Client Applications</a>
+      <a href="/staff/loans" class="nav-item active"><span class="nav-icon">🏛</span> Loan Applications
+        <span class="nav-badge" th:if="${pendingCount > 0}" th:text="${pendingCount}">0</span>
+      </a>
+      <a href="/staff/call-queue" class="nav-item"><span class="nav-icon">📞</span> Call Queue</a>
+      <a href="/staff/tickets" class="nav-item"><span class="nav-icon">🎫</span> Support Tickets</a>
+      <div class="nav-section-lbl">CUSTOMERS</div>
+      <a href="/staff/customers" class="nav-item"><span class="nav-icon">👥</span> Active Clients</a>
+      <div class="nav-section-lbl">CONTROLS</div>
+      <a href="/staff/approvals" class="nav-item"><span class="nav-icon">✅</span> Approvals</a>
+      <a href="/staff/alerts" class="nav-item"><span class="nav-icon">🔔</span> Send Alerts</a>
+      <div class="nav-section-lbl">REPORTING</div>
+      <a href="/staff/reports" class="nav-item"><span class="nav-icon">📊</span> Reports</a>
+      <a href="/staff/audit-log" class="nav-item"><span class="nav-icon">📋</span> Audit Log</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Loan Applications</div>
+      <div class="topbar-right">
+        <div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div><span th:text="${staff.fullName}">Sarah</span></div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+      <div class="page-heading">🏛 Loan Applications</div>
+      <p class="page-sub">Review client loan applications, credit scores and disburse funds</p>
+
+      <!-- Filters -->
+      <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+        <a href="/staff/loans" th:class="'filter-btn ' + (${statusFilter == null} ? 'active' : '')">ALL</a>
+        <a href="/staff/loans?status=PENDING" th:class="'filter-btn ' + (${statusFilter == 'PENDING'} ? 'active' : '')">PENDING <span th:if="${pendingCount > 0}" th:text="'(' + ${pendingCount} + ')'"></span></a>
+        <a href="/staff/loans?status=UNDER_REVIEW" th:class="'filter-btn ' + (${statusFilter == 'UNDER_REVIEW'} ? 'active' : '')">UNDER REVIEW</a>
+        <a href="/staff/loans?status=ACTIVE" th:class="'filter-btn ' + (${statusFilter == 'ACTIVE'} ? 'active' : '')">ACTIVE</a>
+        <a href="/staff/loans?status=REJECTED" th:class="'filter-btn ' + (${statusFilter == 'REJECTED'} ? 'active' : '')">REJECTED</a>
+        <a href="/staff/loans?status=PAID_OFF" th:class="'filter-btn ' + (${statusFilter == 'PAID_OFF'} ? 'active' : '')">PAID OFF</a>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>CLIENT</th>
+              <th>LOAN #</th>
+              <th>TYPE</th>
+              <th>AMOUNT</th>
+              <th>TERM</th>
+              <th>RATE</th>
+              <th>ACCOUNT</th>
+              <th>APPLIED</th>
+              <th>STATUS</th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="loan : ${loans}">
+              <td style="font-weight:700" th:text="${loan.client.fullName}">Name</td>
+              <td style="font-family:monospace;font-size:11px" th:text="${loan.loanNumber}">LN-XXX</td>
+              <td><span class="badge badge-blue" th:text="${loan.loanType.name().replace('_',' ')}">TYPE</span></td>
+              <td style="font-weight:700;color:var(--gold)"
+                  th:text="'$' + ${#numbers.formatDecimal(loan.principalAmount, 0, 'COMMA', 2, 'POINT')}">$0</td>
+              <td th:text="${loan.termMonths} + 'mo'">0mo</td>
+              <td th:text="${loan.interestRate} + '%'">0%</td>
+              <td style="font-size:11px" th:text="${loan.account.type.name().replace('_',' ')} + ' ****' + ${loan.account.accountNumber}">Account</td>
+              <td style="font-size:11px" th:text="${#temporals.format(loan.appliedAt,'MMM dd, HH:mm')}">Date</td>
+              <td>
+                <span th:class="'badge ' +
+                  (${loan.loanStatus.name() == 'ACTIVE'} ? 'badge-green' :
+                  (${loan.loanStatus.name() == 'PENDING'} ? 'badge-orange' :
+                  (${loan.loanStatus.name() == 'PAID_OFF'} ? 'badge-grey' :
+                  (${loan.loanStatus.name() == 'REJECTED'} ? 'badge-red' : 'badge-blue'))))"
+                      th:text="${loan.loanStatus.name().replace('_',' ')}">STATUS</span>
+              </td>
+              <td>
+                <a th:href="@{/staff/loans/review(id=${loan.id})}" class="btn btn-outline btn-sm">REVIEW</a>
+              </td>
+            </tr>
+            <tr th:if="${loans.empty}">
+              <td colspan="10" style="text-align:center;color:var(--muted);padding:40px">No loan applications found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

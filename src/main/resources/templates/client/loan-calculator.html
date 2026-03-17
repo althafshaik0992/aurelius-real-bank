@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>EMI Calculator — Aurelius</title>
+<link rel="stylesheet" th:href="@{/css/main.css}">
+<style>
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.loan-tab{padding:10px 16px;cursor:pointer;border:1px solid var(--border2);background:rgba(255,255,255,0.02);font-family:sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;transition:all 0.2s;white-space:nowrap}
+.loan-tab.active{border-color:var(--gold);background:rgba(201,168,76,0.08);color:var(--gold)}
+.loan-tab:hover:not(.active){border-color:rgba(201,168,76,0.3)}
+.result-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-family:sans-serif;font-size:12px}
+.emi-big{font-family:Georgia;font-size:42px;color:var(--gold);margin:12px 0}
+input[type=range]{width:100%;accent-color:var(--gold);height:4px;margin:8px 0}
+.amort-table{width:100%;font-family:sans-serif;font-size:11px;border-collapse:collapse;margin-top:10px}
+.amort-table th{padding:8px 6px;text-align:left;color:var(--muted);border-bottom:1px solid var(--border2)}
+.amort-table td{padding:6px 6px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.compare-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:14px 16px;cursor:pointer;transition:all 0.2s}
+.compare-card:hover{border-color:rgba(201,168,76,0.4)}
+.compare-card.best{border-color:var(--gold);background:rgba(201,168,76,0.06)}
+</style>
+</head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">PRIVATE BANK</div></div></div>
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div>
+      <div class="s-user-name" th:text="${user.fullName}">James</div>
+      <div class="s-user-tier" th:text="${user.clientTier} + ' CLIENT'">PLATINUM CLIENT</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">MAIN</div>
+      <a href="/client/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Overview</a>
+      <a href="/client/accounts" class="nav-item"><span class="nav-icon">🏦</span> Accounts</a>
+      <a href="/client/transactions" class="nav-item"><span class="nav-icon">↕</span> Transactions</a>
+      <a href="/client/transfer" class="nav-item"><span class="nav-icon">➤</span> Transfer Funds</a>
+      <div class="nav-section-lbl">WEALTH</div>
+      <a href="/client/investments" class="nav-item"><span class="nav-icon">📈</span> Investments</a>
+      <a href="/client/cards" class="nav-item"><span class="nav-icon">💳</span> Cards</a>
+      <a href="/client/loans" class="nav-item active"><span class="nav-icon">🏛</span> Loans</a>
+      <div class="nav-section-lbl">ACCOUNT</div>
+      <a href="/client/notifications" class="nav-item"><span class="nav-icon">🔔</span> Notifications</a>
+      <a href="/client/settings" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">🧮 EMI Calculator</div>
+      <div class="topbar-right">
+        <a href="/client/loans/select-type" class="btn btn-gold btn-sm">APPLY NOW →</a>
+        <a href="/client/loans" class="btn btn-outline btn-sm">← BACK</a>
+        <div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><span th:text="${user.fullName}">James</span></div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="page-heading">Loan EMI Calculator</div>
+      <p class="page-sub">Calculate your monthly payments before applying. Rates shown are based on your
+        <span th:text="${user.clientTier != null ? user.clientTier : 'STANDARD'}" style="color:var(--gold)">tier</span> status.</p>
+
+      <!-- Loan Type Tabs -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+        <button class="loan-tab active" onclick="setType('PERSONAL',this)">👤 Personal</button>
+        <button class="loan-tab" onclick="setType('AUTO',this)">🚗 Auto</button>
+        <button class="loan-tab" onclick="setType('HOME',this)">🏠 Home</button>
+        <button class="loan-tab" onclick="setType('BUSINESS',this)">💼 Business</button>
+        <button class="loan-tab" onclick="setType('EDUCATION',this)">🎓 Education</button>
+        <button class="loan-tab" onclick="setType('MEDICAL',this)">🏥 Medical</button>
+      </div>
+
+      <div class="calc-grid">
+        <!-- LEFT: Inputs -->
+        <div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="panel-hdr">
+              <div class="panel-title">Loan Parameters</div>
+              <div style="font-family:sans-serif;font-size:11px;color:var(--gold)" id="currentTypeLbl">Personal Loan</div>
+            </div>
+
+            <!-- Amount Slider -->
+            <div style="margin-bottom:20px">
+              <div style="display:flex;justify-content:space-between;font-family:sans-serif;font-size:11px;margin-bottom:4px">
+                <span class="text-muted">LOAN AMOUNT</span>
+                <span style="color:var(--gold);font-weight:700" id="amountLbl">$50,000</span>
+              </div>
+              <input type="range" id="amountSlider" min="1000" max="500000" value="50000" step="1000" oninput="syncAmount(this.value)">
+              <div style="display:flex;justify-content:space-between;font-family:sans-serif;font-size:9px;color:var(--muted)">
+                <span id="minAmtLbl">$1,000</span><span id="maxAmtLbl">$500,000</span>
+              </div>
+              <input type="number" id="amountInput" class="form-ctrl" value="50000" min="1000" step="1000"
+                     style="margin-top:8px" oninput="syncSlider(this.value)">
+            </div>
+
+            <!-- Term Slider -->
+            <div style="margin-bottom:20px">
+              <div style="display:flex;justify-content:space-between;font-family:sans-serif;font-size:11px;margin-bottom:4px">
+                <span class="text-muted">REPAYMENT TERM</span>
+                <span style="color:var(--gold);font-weight:700" id="termLbl">36 months (3 years)</span>
+              </div>
+              <input type="range" id="termSlider" min="6" max="60" value="36" step="6" oninput="syncTerm(this.value)">
+              <div style="display:flex;justify-content:space-between;font-family:sans-serif;font-size:9px;color:var(--muted)">
+                <span id="minTermLbl">6 mo</span><span id="maxTermLbl">60 mo</span>
+              </div>
+            </div>
+
+            <!-- Rate display -->
+            <div style="background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);padding:12px 14px;font-family:sans-serif">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:11px;color:var(--muted)">INTEREST RATE</span>
+                <span style="font-size:13px;font-weight:700;color:var(--gold)" id="rateLbl">12.5% p.a.</span>
+              </div>
+              <div style="font-size:10px;color:var(--muted)">
+                <span th:text="${user.clientTier != null ? user.clientTier : 'STANDARD'}">STANDARD</span> tier rate
+                (includes your loyalty discount)
+              </div>
+            </div>
+          </div>
+
+          <!-- All types comparison -->
+          <div class="panel">
+            <div class="panel-hdr"><div class="panel-title">Compare All Loan Types</div></div>
+            <div style="display:grid;gap:8px" id="compareGrid"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Results -->
+        <div>
+          <div class="panel" style="margin-bottom:14px;text-align:center;padding:28px 20px">
+            <div style="font-family:sans-serif;font-size:10px;color:var(--muted);letter-spacing:0.1em">MONTHLY EMI</div>
+            <div class="emi-big" id="emiResult">$0</div>
+            <div style="font-family:sans-serif;font-size:11px;color:var(--muted)" id="emiSubtext">Enter loan details to calculate</div>
+            <div style="margin-top:20px">
+              <a id="applyBtn" href="/client/loans/apply/personal" class="btn btn-gold" style="padding:12px 32px;font-size:11px;letter-spacing:0.12em">
+                APPLY FOR THIS LOAN →
+              </a>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-bottom:14px">
+            <div class="panel-hdr"><div class="panel-title">Payment Breakdown</div></div>
+            <div class="result-row"><span class="text-muted">Loan Amount</span><span id="r-principal">$0</span></div>
+            <div class="result-row"><span class="text-muted">Total Interest</span><span id="r-interest" style="color:var(--red)">$0</span></div>
+            <div class="result-row"><span class="text-muted">Total Amount Payable</span><span id="r-total" style="font-weight:700">$0</span></div>
+            <div class="result-row" style="border:none"><span class="text-muted">Effective Cost of Loan</span><span id="r-cost" style="color:var(--orange)">0%</span></div>
+            <!-- Visual breakdown bar -->
+            <div style="margin-top:12px">
+              <div style="display:flex;height:8px;border-radius:4px;overflow:hidden">
+                <div id="principalBar" style="background:var(--gold);transition:width 0.3s" ></div>
+                <div id="interestBar" style="background:rgba(231,76,60,0.6);transition:width 0.3s"></div>
+              </div>
+              <div style="display:flex;gap:16px;margin-top:6px;font-family:sans-serif;font-size:10px;color:var(--muted)">
+                <span><span style="color:var(--gold)">■</span> Principal</span>
+                <span><span style="color:rgba(231,76,60,0.8)">■</span> Interest</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Amortization Table (first 12 rows) -->
+          <div class="panel">
+            <div class="panel-hdr">
+              <div class="panel-title">Amortization Schedule</div>
+              <div style="font-family:sans-serif;font-size:10px;color:var(--muted)">First 12 installments</div>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="amort-table">
+                <thead><tr><th>#</th><th>EMI</th><th>PRINCIPAL</th><th>INTEREST</th><th>BALANCE</th></tr></thead>
+                <tbody id="amortBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+const tier = /*[[${user.clientTier}]]*/ 'STANDARD';
+const discount = tier === 'PLATINUM' ? 1.5 : tier === 'PRIVATE' ? 0.75 : 0;
+
+const loanTypes = {
+  PERSONAL:  { label:'Personal Loan',  icon:'👤', baseRate:12.5, minAmt:1000,   maxAmt:500000,   minTerm:6,  maxTerm:60  },
+  AUTO:      { label:'Auto Loan',      icon:'🚗', baseRate:9.0,  minAmt:5000,   maxAmt:500000,   minTerm:24, maxTerm:84  },
+  HOME:      { label:'Home/Mortgage',  icon:'🏠', baseRate:7.5,  minAmt:50000,  maxAmt:10000000, minTerm:60, maxTerm:360 },
+  BUSINESS:  { label:'Business Loan',  icon:'💼', baseRate:11.0, minAmt:10000,  maxAmt:5000000,  minTerm:12, maxTerm:120 },
+  EDUCATION: { label:'Education Loan', icon:'🎓', baseRate:8.5,  minAmt:1000,   maxAmt:200000,   minTerm:12, maxTerm:120 },
+  MEDICAL:   { label:'Medical Loan',   icon:'🏥', baseRate:10.0, minAmt:1000,   maxAmt:300000,   minTerm:6,  maxTerm:60  }
+};
+
+let currentType = 'PERSONAL';
+
+function getRate(type) { return Math.max(loanTypes[type].baseRate - discount, 0); }
+
+function calcEMI(p, r, n) {
+  if (!p || p <= 0 || n <= 0) return 0;
+  if (r === 0) return p / n;
+  const mr = r / 1200;
+  const pow = Math.pow(1 + mr, n);
+  return (p * mr * pow) / (pow - 1);
+}
+
+function fmt(n) { return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtShort(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + (n/1000).toFixed(0) + 'K';
+  return '$' + n.toFixed(0);
+}
+
+function setType(type, btn) {
+  currentType = type;
+  document.querySelectorAll('.loan-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const lt = loanTypes[type];
+  document.getElementById('currentTypeLbl').textContent = lt.icon + ' ' + lt.label;
+  document.getElementById('rateLbl').textContent = getRate(type).toFixed(2) + '% p.a.';
+  document.getElementById('applyBtn').href = '/client/loans/apply/' + type.toLowerCase();
+
+  // Update slider ranges
+  const amtSlider = document.getElementById('amountSlider');
+  amtSlider.min = lt.minAmt; amtSlider.max = lt.maxAmt;
+  document.getElementById('minAmtLbl').textContent = fmtShort(lt.minAmt);
+  document.getElementById('maxAmtLbl').textContent = fmtShort(lt.maxAmt);
+
+  const termSlider = document.getElementById('termSlider');
+  termSlider.min = lt.minTerm; termSlider.max = lt.maxTerm;
+  document.getElementById('minTermLbl').textContent = lt.minTerm + ' mo';
+  document.getElementById('maxTermLbl').textContent = lt.maxTerm + ' mo';
+
+  // Clamp values
+  let amt = parseFloat(document.getElementById('amountInput').value);
+  amt = Math.min(Math.max(amt, lt.minAmt), lt.maxAmt);
+  document.getElementById('amountInput').value = amt;
+  amtSlider.value = amt;
+
+  let term = parseInt(termSlider.value);
+  term = Math.min(Math.max(term, lt.minTerm), lt.maxTerm);
+  termSlider.value = term;
+
+  recalculate();
+}
+
+function syncAmount(val) {
+  document.getElementById('amountLbl').textContent = fmt(parseFloat(val));
+  document.getElementById('amountInput').value = val;
+  recalculate();
+}
+
+function syncSlider(val) {
+  const lt = loanTypes[currentType];
+  val = Math.min(Math.max(parseFloat(val)||0, lt.minAmt), lt.maxAmt);
+  document.getElementById('amountSlider').value = val;
+  document.getElementById('amountLbl').textContent = fmt(val);
+  recalculate();
+}
+
+function syncTerm(val) {
+  const months = parseInt(val);
+  const years = months / 12;
+  const lbl = years >= 1 ? months + ' months (' + (Number.isInteger(years) ? years : years.toFixed(1)) + ' years)' : months + ' months';
+  document.getElementById('termLbl').textContent = lbl;
+  recalculate();
+}
+
+function recalculate() {
+  const principal = parseFloat(document.getElementById('amountInput').value) || 0;
+  const months = parseInt(document.getElementById('termSlider').value) || 12;
+  const rate = getRate(currentType);
+  const emi = calcEMI(principal, rate, months);
+  const totalPayable = emi * months;
+  const totalInterest = totalPayable - principal;
+  const costPct = principal > 0 ? (totalInterest / principal * 100).toFixed(1) : 0;
+
+  document.getElementById('emiResult').textContent = fmt(emi);
+  document.getElementById('emiSubtext').textContent = 'per month for ' + months + ' months';
+  document.getElementById('r-principal').textContent = fmt(principal);
+  document.getElementById('r-interest').textContent = fmt(totalInterest);
+  document.getElementById('r-total').textContent = fmt(totalPayable);
+  document.getElementById('r-cost').textContent = costPct + '% of principal';
+
+  // Bar
+  const pPct = principal > 0 ? (principal / totalPayable * 100).toFixed(1) : 50;
+  document.getElementById('principalBar').style.width = pPct + '%';
+  document.getElementById('interestBar').style.width = (100 - pPct) + '%';
+
+  // Amortization first 12 rows
+  let balance = principal;
+  const mr = rate / 1200;
+  let rows = '';
+  for (let i = 1; i <= Math.min(12, months); i++) {
+    const interest = balance * mr;
+    const princ = i === months ? balance : emi - interest;
+    balance = Math.max(balance - princ, 0);
+    rows += '<tr><td style="color:var(--muted)">' + i + '</td><td>' + fmt(emi) + '</td>' +
+      '<td style="color:var(--gold)">' + fmt(princ) + '</td>' +
+      '<td style="color:rgba(231,76,60,0.8)">' + fmt(interest) + '</td>' +
+      '<td>' + fmt(balance) + '</td></tr>';
+  }
+  if (months > 12) rows += '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:8px;font-style:italic">... ' + (months - 12) + ' more installments</td></tr>';
+  document.getElementById('amortBody').innerHTML = rows;
+
+  // Update compare
+  buildCompare(principal, months);
+}
+
+function buildCompare(amount, months) {
+  const grid = document.getElementById('compareGrid');
+  const emis = Object.entries(loanTypes).map(([type, lt]) => {
+    const rate = getRate(type);
+    const emi = calcEMI(amount, rate, months);
+    return { type, lt, rate, emi };
+  }).sort((a, b) => a.emi - b.emi);
+
+  const bestEmi = emis[0].emi;
+  grid.innerHTML = emis.map((e, i) => `
+    <div class="compare-card ${e.type === currentType ? 'best' : ''}" onclick="setType('${e.type}', document.querySelector('.loan-tab:nth-child(${['PERSONAL','AUTO','HOME','BUSINESS','EDUCATION','MEDICAL'].indexOf(e.type)+1})'))" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-family:sans-serif;font-size:11px;font-weight:700">${e.lt.icon} ${e.lt.label}</div>
+        <div style="font-family:sans-serif;font-size:10px;color:var(--muted)">${e.rate.toFixed(2)}% p.a.</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:Georgia;font-size:15px;color:${e.type === currentType ? 'var(--gold)' : '#fff'}">${fmt(e.emi)}<span style="font-size:10px;color:var(--muted)">/mo</span></div>
+        ${i === 0 ? '<div style="font-size:9px;color:var(--green)">LOWEST EMI</div>' : ''}
+      </div>
+    </div>`).join('');
+}
+
+// Init
+document.getElementById('amountLbl').textContent = fmt(50000);
+document.getElementById('termLbl').textContent = '36 months (3 years)';
+recalculate();
+</script>
+</body>
+</html>

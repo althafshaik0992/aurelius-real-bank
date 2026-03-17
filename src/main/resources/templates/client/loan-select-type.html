@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Apply for Loan — Aurelius</title>
+<link rel="stylesheet" th:href="@{/css/main.css}">
+<style>
+.loan-product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+.loan-product-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:28px 22px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:block}
+.loan-product-card:hover{border-color:var(--gold);background:rgba(201,168,76,0.05);transform:translateY(-2px)}
+.lp-icon{font-size:36px;margin-bottom:12px}
+.lp-name{font-family:Georgia;font-size:16px;margin-bottom:4px;color:#fff}
+.lp-rate{font-family:sans-serif;font-size:11px;color:var(--gold);margin-bottom:8px}
+.lp-desc{font-family:sans-serif;font-size:11px;color:var(--muted);line-height:1.6}
+.lp-range{font-family:sans-serif;font-size:10px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border2)}
+</style>
+</head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">PRIVATE BANK</div></div></div>
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div>
+      <div class="s-user-name" th:text="${user.fullName}">James</div>
+      <div class="s-user-tier" th:text="${user.clientTier} + ' CLIENT'">PLATINUM CLIENT</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">MAIN</div>
+      <a href="/client/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Overview</a>
+      <a href="/client/accounts" class="nav-item"><span class="nav-icon">🏦</span> Accounts</a>
+      <a href="/client/transactions" class="nav-item"><span class="nav-icon">↕</span> Transactions</a>
+      <a href="/client/transfer" class="nav-item"><span class="nav-icon">➤</span> Transfer Funds</a>
+      <div class="nav-section-lbl">WEALTH</div>
+      <a href="/client/investments" class="nav-item"><span class="nav-icon">📈</span> Investments</a>
+      <a href="/client/cards" class="nav-item"><span class="nav-icon">💳</span> Cards</a>
+      <a href="/client/loans" class="nav-item active"><span class="nav-icon">🏛</span> Loans</a>
+      <div class="nav-section-lbl">ACCOUNT</div>
+      <a href="/client/notifications" class="nav-item"><span class="nav-icon">🔔</span> Notifications</a>
+      <a href="/client/settings" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Select Loan Type</div>
+      <div class="topbar-right">
+        <a href="/client/loans/calculator" class="btn btn-outline btn-sm">🧮 EMI CALCULATOR</a>
+        <a href="/client/loans" class="btn btn-outline btn-sm">← BACK</a>
+        <div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><span th:text="${user.fullName}">James</span></div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="page-heading">Choose a Loan Product</div>
+      <p class="page-sub">Select the loan type that best fits your needs. Each product has competitive rates tailored to your <span th:text="${user.clientTier != null ? user.clientTier : 'STANDARD'}" style="color:var(--gold)">tier</span> status.</p>
+
+      <div class="loan-product-grid">
+
+        <a href="/client/loans/apply/personal" class="loan-product-card">
+          <div class="lp-icon">👤</div>
+          <div class="lp-name">Personal Loan</div>
+          <div class="lp-rate" th:text="${user.clientTier == 'PLATINUM'} ? 'From 11.0% p.a.' : (${user.clientTier == 'PRIVATE'} ? 'From 11.75% p.a.' : 'From 12.5% p.a.')">From 11.0%</div>
+          <div class="lp-desc">Flexible funds for any personal need — debt consolidation, home improvement, travel, or major purchases.</div>
+          <div class="lp-range">$1,000 – $500,000 · Up to 60 months</div>
+        </a>
+
+        <a href="/client/loans/apply/auto" class="loan-product-card">
+          <div class="lp-icon">🚗</div>
+          <div class="lp-name">Auto Loan</div>
+          <div class="lp-rate" th:text="${user.clientTier == 'PLATINUM'} ? 'From 7.5% p.a.' : (${user.clientTier == 'PRIVATE'} ? 'From 8.25% p.a.' : 'From 9.0% p.a.')">From 7.5%</div>
+          <div class="lp-desc">Finance your new or used vehicle with competitive rates. Covers cars, trucks, and luxury vehicles.</div>
+          <div class="lp-range">$5,000 – $500,000 · Up to 84 months</div>
+        </a>
+
+        <a href="/client/loans/apply/home" class="loan-product-card">
+          <div class="lp-icon">🏠</div>
+          <div class="lp-name">Home / Mortgage</div>
+          <div class="lp-rate" th:text="${user.clientTier == 'PLATINUM'} ? 'From 6.0% p.a.' : (${user.clientTier == 'PRIVATE'} ? 'From 6.75% p.a.' : 'From 7.5% p.a.')">From 6.0%</div>
+          <div class="lp-desc">Purchase, refinance, or invest in real estate. Fixed and adjustable rates available.</div>
+          <div class="lp-range">$50,000 – $10,000,000 · Up to 360 months (30 years)</div>
+        </a>
+
+        <a href="/client/loans/apply/business" class="loan-product-card">
+          <div class="lp-icon">💼</div>
+          <div class="lp-name">Business Loan</div>
+          <div class="lp-rate" th:text="${user.clientTier == 'PLATINUM'} ? 'From 9.5% p.a.' : (${user.clientTier == 'PRIVATE'} ? 'From 10.25% p.a.' : 'From 11.0% p.a.')">From 9.5%</div>
+          <div class="lp-desc">Fund your business growth — equipment, expansion, working capital, or commercial real estate.</div>
+          <div class="lp-range">$10,000 – $5,000,000 · Up to 120 months</div>
+        </a>
+
+        <a href="/client/loans/apply/education" class="loan-product-card">
+          <div class="lp-icon">🎓</div>
+          <div class="lp-name">Education Loan</div>
+          <div class="lp-rate" th:text="${user.clientTier == 'PLATINUM'} ? 'From 7.0% p.a.' : (${user.clientTier == 'PRIVATE'} ? 'From 7.75% p.a.' : 'From 8.5% p.a.')">From 7.0%</div>
+          <div class="lp-desc">Invest in your future. Covers tuition, housing, books, and living expenses at accredited institutions.</div>
+          <div class="lp-range">$1,000 – $200,000 · Up to 120 months</div>
+        </a>
+
+        <a href="/client/loans/apply/medical" class="loan-product-card">
+          <div class="lp-icon">🏥</div>
+          <div class="lp-name">Medical Loan</div>
+          <div class="lp-rate" th:text="${user.clientTier == 'PLATINUM'} ? 'From 8.5% p.a.' : (${user.clientTier == 'PRIVATE'} ? 'From 9.25% p.a.' : 'From 10.0% p.a.')">From 8.5%</div>
+          <div class="lp-desc">Cover medical expenses quickly. Available for elective procedures, emergencies, and ongoing treatment.</div>
+          <div class="lp-range">$1,000 – $300,000 · Up to 60 months</div>
+        </a>
+
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

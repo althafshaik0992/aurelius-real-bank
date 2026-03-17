@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>My Loans — Aurelius</title>
+<link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="s-logo-circle">A</div>
+      <div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">PRIVATE BANK</div></div>
+    </div>
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div>
+      <div class="s-user-name" th:text="${user.fullName}">James</div>
+      <div class="s-user-tier" th:text="${user.clientTier} + ' CLIENT'">PLATINUM CLIENT</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">MAIN</div>
+      <a href="/client/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Overview</a>
+      <a href="/client/accounts" class="nav-item"><span class="nav-icon">🏦</span> Accounts</a>
+      <a href="/client/transactions" class="nav-item"><span class="nav-icon">↕</span> Transactions</a>
+      <a href="/client/transfer" class="nav-item"><span class="nav-icon">➤</span> Transfer Funds</a>
+      <div class="nav-section-lbl">WEALTH</div>
+      <a href="/client/investments" class="nav-item"><span class="nav-icon">📈</span> Investments</a>
+      <a href="/client/cards" class="nav-item"><span class="nav-icon">💳</span> Cards</a>
+      <a href="/client/loans" class="nav-item active"><span class="nav-icon">🏛</span> Loans</a>
+      <div class="nav-section-lbl">ACCOUNT</div>
+      <a href="/client/notifications" class="nav-item"><span class="nav-icon">🔔</span> Notifications</a>
+      <a href="/client/settings" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">My Loans</div>
+      <div class="topbar-right">
+        <a href="/client/loans/select-type" class="btn btn-gold btn-sm">+ APPLY FOR LOAN</a>
+        <div class="topbar-user">
+          <div class="topbar-av" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div>
+          <span th:text="${user.fullName}">James</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+      <!-- Empty state -->
+      <div th:if="${loans.empty}" style="text-align:center;padding:80px 20px">
+        <div style="font-size:48px;margin-bottom:16px">🏛</div>
+        <div style="font-family:Georgia;font-size:20px;margin-bottom:8px">No Loans Yet</div>
+        <div style="font-family:sans-serif;font-size:13px;color:var(--muted);margin-bottom:24px">Apply for a personal, home, auto, or business loan</div>
+        <a href="/client/loans/select-type" class="btn btn-gold" style="padding:14px 32px">APPLY FOR A LOAN →</a>
+      </div>
+
+      <!-- Loans list -->
+      <div th:unless="${loans.empty}">
+        <div style="display:grid;gap:14px">
+          <div th:each="loan : ${loans}"
+               style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:20px 24px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div>
+                <div style="font-family:Georgia;font-size:16px;margin-bottom:3px" th:text="${loan.loanType.name().replace('_',' ')} + ' LOAN'">PERSONAL LOAN</div>
+                <div style="font-family:sans-serif;font-size:11px;color:var(--muted)" th:text="${loan.loanNumber}">LN-XXXXXXXX</div>
+              </div>
+              <span th:class="'badge ' +
+                (${loan.loanStatus.name() == 'ACTIVE'} ? 'badge-green' :
+                (${loan.loanStatus.name() == 'PENDING'} ? 'badge-orange' :
+                (${loan.loanStatus.name() == 'APPROVED'} ? 'badge-blue' :
+                (${loan.loanStatus.name() == 'PAID_OFF'} ? 'badge-grey' :
+                (${loan.loanStatus.name() == 'REJECTED'} ? 'badge-red' : 'badge-orange')))))"
+                    th:text="${loan.loanStatus.name().replace('_',' ')}">STATUS</span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;font-family:sans-serif">
+              <div>
+                <div style="font-size:10px;color:var(--muted);margin-bottom:3px">AMOUNT</div>
+                <div style="font-size:15px;font-weight:700;color:var(--gold)"
+                     th:text="'$' + ${#numbers.formatDecimal(loan.approvedAmount != null ? loan.approvedAmount : loan.principalAmount, 0, 'COMMA', 2, 'POINT')}">$0.00</div>
+              </div>
+              <div th:if="${loan.loanStatus.name() == 'ACTIVE'}">
+                <div style="font-size:10px;color:var(--muted);margin-bottom:3px">OUTSTANDING</div>
+                <div style="font-size:15px;font-weight:700;color:var(--red)"
+                     th:text="'$' + ${#numbers.formatDecimal(loan.outstandingBalance, 0, 'COMMA', 2, 'POINT')}">$0.00</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--muted);margin-bottom:3px">MONTHLY EMI</div>
+                <div style="font-size:15px" th:text="'$' + ${#numbers.formatDecimal(loan.monthlyPayment, 0, 'COMMA', 2, 'POINT')}">$0.00</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--muted);margin-bottom:3px">INTEREST RATE</div>
+                <div style="font-size:15px" th:text="${loan.interestRate} + '% p.a.'">0%</div>
+              </div>
+              <div th:if="${loan.loanStatus.name() == 'ACTIVE' && loan.nextPaymentDate != null}">
+                <div style="font-size:10px;color:var(--muted);margin-bottom:3px">NEXT PAYMENT</div>
+                <div style="font-size:13px;color:#f39c12" th:text="${#temporals.format(loan.nextPaymentDate,'MMM dd, yyyy')}">Date</div>
+              </div>
+            </div>
+
+            <!-- Progress bar for active loans -->
+            <div th:if="${loan.loanStatus.name() == 'ACTIVE' && loan.approvedAmount != null && loan.approvedAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+              <div style="display:flex;justify-content:space-between;font-family:sans-serif;font-size:10px;color:var(--muted);margin-bottom:5px">
+                <span>REPAYMENT PROGRESS</span>
+                <span th:text="${#numbers.formatDecimal(((loan.approvedAmount.subtract(loan.outstandingBalance)).divide(loan.approvedAmount, 4, T(java.math.RoundingMode).HALF_UP)).multiply(T(java.math.BigDecimal).valueOf(100)), 0, 1)} + '%'">0%</span>
+              </div>
+              <div style="background:rgba(255,255,255,0.08);height:4px;border-radius:2px">
+                <div style="background:var(--gold);height:4px;border-radius:2px;transition:width 0.3s"
+                     th:style="'width:' + ${#numbers.formatDecimal(((loan.approvedAmount.subtract(loan.outstandingBalance)).divide(loan.approvedAmount, 4, T(java.math.RoundingMode).HALF_UP)).multiply(T(java.math.BigDecimal).valueOf(100)), 0, 1)} + '%'"></div>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;display:flex;gap:8px">
+              <a th:href="@{/client/loans/detail(id=${loan.id})}" class="btn btn-outline btn-sm">VIEW DETAILS →</a>
+              <span th:if="${loan.loanStatus.name() == 'REJECTED'}"
+                    style="font-family:sans-serif;font-size:11px;color:var(--red);padding:6px 0"
+                    th:text="'Rejected: ' + ${loan.rejectionReason}">Reason</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
