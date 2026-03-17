@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Audit Log — Aurelius Staff</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="s-logo-circle">A</div>
+      <div>
+        <div class="s-logo-name">AURELIUS</div>
+        <div class="s-logo-sub">STAFF HUB</div>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2"
+           th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+      <div class="s-user-name" th:text="${staff.fullName}">Sarah</div>
+      <div class="s-user-tier" th:text="${staff.role.name().replace('_',' ')}">MANAGER</div>
+      <div class="s-user-id" th:text="${staff.badgeId}">ID</div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">OPERATIONS</div>
+      <a href="/staff/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="/staff/applications" class="nav-item"><span class="nav-icon">📋</span> Client Applications</a>
+      <a href="/staff/call-queue" class="nav-item"><span class="nav-icon">📞</span> Call Queue</a>
+      <a href="/staff/tickets" class="nav-item"><span class="nav-icon">🎫</span> Support Tickets</a>
+
+      <div class="nav-section-lbl">CUSTOMERS</div>
+      <a href="/staff/customers" class="nav-item"><span class="nav-icon">👥</span> Active Clients</a>
+
+      <div class="nav-section-lbl">CONTROLS</div>
+      <a href="/staff/approvals" class="nav-item"><span class="nav-icon">✅</span> Approvals</a>
+      <a href="/staff/alerts" class="nav-item"><span class="nav-icon">🔔</span> Send Alerts</a>
+
+      <div class="nav-section-lbl">REPORTING</div>
+      <a href="/staff/reports" class="nav-item"><span class="nav-icon">📊</span> Reports</a>
+      <a href="/staff/audit-log" class="nav-item active"><span class="nav-icon">📋</span> Audit Log</a>
+    </div>
+
+    <div class="sidebar-bottom">
+      <a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Audit Log</div>
+      <div class="topbar-right">
+        <div class="topbar-user">
+          <div class="topbar-av" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+          <span th:text="${staff.fullName}">Sarah</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="panel panel-no-pad">
+        <div class="panel-hdr" style="padding:16px 20px">
+          <div class="panel-title">System Activity Log</div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>DATE</th>
+            <th>TICKET / ACTION</th>
+            <th>CUSTOMER</th>
+            <th>ASSIGNED TO</th>
+            <th>STATUS</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="t : ${tickets}">
+            <td class="text-muted mono text-xs"
+                th:text="${#temporals.format(t.createdAt,'MMM dd HH:mm')}">Date</td>
+
+            <td>
+              <div style="font-weight:600;font-size:12px" th:text="${t.ticketNumber}">TKT</div>
+              <div class="text-xs text-muted" th:text="${#strings.abbreviate(t.title,45)}">Title</div>
+            </td>
+
+            <td th:text="${t.customer != null ? t.customer.fullName : '—'}">Customer</td>
+
+            <td th:text="${t.assignedTo != null ? t.assignedTo.fullName : 'Unassigned'}">Agent</td>
+
+            <td>
+              <span th:class="'badge ' + (${t.status != null && t.status.name()=='RESOLVED'} ? 'badge-green' : (${t.status != null && t.status.name()=='ESCALATED'} ? 'badge-orange' : 'badge-blue'))"
+                    th:text="${t.status != null ? t.status : 'UNKNOWN'}">
+                STATUS
+              </span>
+            </td>
+          </tr>
+
+          <tr th:if="${tickets.empty}">
+            <td colspan="5" style="text-align:center;color:var(--muted);padding:30px">
+              No audit activity found.
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Call Queue — Aurelius Staff</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="s-logo-circle">A</div>
+      <div>
+        <div class="s-logo-name">AURELIUS</div>
+        <div class="s-logo-sub">STAFF HUB</div>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2"
+           th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+      <div class="s-user-name" th:text="${staff.fullName}">Sarah Chen</div>
+      <div class="s-user-tier" th:text="${staff.role.name().replace('_',' ')}">BRANCH MANAGER</div>
+      <div class="s-user-id" th:text="${staff.badgeId}">ARL-00421</div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">OPERATIONS</div>
+      <a href="/staff/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="/staff/applications" class="nav-item"><span class="nav-icon">📋</span> Client Applications</a>
+      <a href="/staff/call-queue" class="nav-item active"><span class="nav-icon">📞</span> Call Queue</a>
+      <a href="/staff/tickets" class="nav-item"><span class="nav-icon">🎫</span> Support Tickets</a>
+
+      <div class="nav-section-lbl">CUSTOMERS</div>
+      <a href="/staff/customers" class="nav-item"><span class="nav-icon">👥</span> Active Clients</a>
+
+      <div class="nav-section-lbl">CONTROLS</div>
+      <a href="/staff/approvals" class="nav-item"><span class="nav-icon">✅</span> Approvals</a>
+      <a href="/staff/alerts" class="nav-item"><span class="nav-icon">🔔</span> Send Alerts</a>
+
+      <div class="nav-section-lbl">REPORTING</div>
+      <a href="/staff/reports" class="nav-item"><span class="nav-icon">📊</span> Reports</a>
+      <a href="/staff/audit-log" class="nav-item"><span class="nav-icon">📋</span> Audit Log</a>
+    </div>
+
+    <div class="sidebar-bottom">
+      <a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Live Call Queue</div>
+      <div class="topbar-right">
+        <div class="topbar-user">
+          <div class="topbar-av" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+          <span th:text="${staff.fullName}">Sarah</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="page-heading">📞 Live Call Queue</div>
+      <p class="page-sub"
+         th:text="'Active calls: ' + ${activeTickets.size()} + ' · Waiting: ' + ${queuedTickets.size()} + ' · Resolved today: ' + ${resolvedToday}">
+        Queue overview
+      </p>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">IN QUEUE</div>
+          <div class="stat-value" th:text="${queueSize}">0</div>
+          <div class="stat-change ne"
+               th:text="${activeTickets.size()} + ' active, ' + ${queuedTickets.size()} + ' waiting'">
+            0 active, 0 waiting
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">ACTIVE CALLS</div>
+          <div class="stat-value" th:text="${activeTickets.size()}">0</div>
+          <div class="stat-change ne">In progress now</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">RESOLVED TODAY</div>
+          <div class="stat-value" th:text="${resolvedToday}">0</div>
+          <div class="stat-change up">Tickets closed</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">WAITING</div>
+          <div class="stat-value"
+               th:classappend="${queuedTickets.size() > 3} ? ' text-red' : ''"
+               th:text="${queuedTickets.size()}">0</div>
+          <div class="stat-change"
+               th:classappend="${queuedTickets.size() > 3} ? ' dn' : ' ne'">
+            Pending response
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-no-pad" style="max-width:860px">
+        <div class="panel-hdr" style="padding:14px 20px;border-bottom:1px solid var(--border)">
+          <div class="panel-title">Customer Queue</div>
+          <a href="/staff/tickets" class="panel-action">MANAGE TICKETS →</a>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${queueSize == 0}" style="padding:48px;text-align:center;color:var(--muted)">
+          <div style="font-size:40px;margin-bottom:12px">✅</div>
+          <div style="font-size:15px;font-family:Georgia;margin-bottom:6px">Queue is clear</div>
+          <div style="font-family:sans-serif;font-size:13px">No active calls or customers waiting</div>
+        </div>
+
+        <!-- Active calls -->
+        <div th:each="t : ${activeTickets}"
+             style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--border);background:rgba(39,174,96,0.04);border-left:3px solid var(--green)">
+          <div class="avatar"
+               style="width:40px;height:40px;font-size:16px;background:rgba(39,174,96,0.15);color:var(--green);flex-shrink:0">
+            📞
+          </div>
+
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+              <div style="font-size:13px;font-weight:700"
+                   th:text="${t.customer != null ? t.customer.fullName : 'Unknown'}">Name</div>
+
+              <span th:if="${t.customer != null}"
+                    th:class="'badge ' + (${t.customer.clientTier == 'PLATINUM'} ? 'badge-gold' : (${t.customer.clientTier == 'PRIVATE'} ? 'badge-blue' : 'badge-grey'))"
+                    th:text="${t.customer.clientTier}">
+                TIER
+              </span>
+
+              <span class="badge badge-green"
+                    th:text="${t.status != null and t.status.name() == 'IN_PROGRESS'} ? '● ACTIVE' : 'ACTIVE'">
+                ● ACTIVE
+              </span>
+            </div>
+
+            <div class="text-xs text-muted" th:text="${t.title}">Issue</div>
+            <div class="text-xs" style="color:var(--muted);margin-top:2px"
+                 th:text="'Ticket ' + ${t.ticketNumber} + ' · ' + ${t.category}">
+              TKT
+            </div>
+          </div>
+
+          <div style="text-align:right;flex-shrink:0">
+            <span th:class="'badge ' + (${t.priority.name()=='CRITICAL'} ? 'badge-red' : (${t.priority.name()=='HIGH'} ? 'badge-orange' : 'badge-grey'))"
+                  th:text="${t.priority}">
+              PRIORITY
+            </span>
+            <div class="text-xs text-muted" style="margin-top:4px"
+                 th:text="${#temporals.format(t.createdAt,'MMM dd HH:mm')}">
+              Time
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <form method="post" th:action="@{'/staff/tickets/' + ${t.id} + '/resolve'}">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button type="submit" class="btn btn-green btn-sm" style="border:none">END CALL</button>
+            </form>
+
+            <a th:if="${t.customer != null}"
+               th:href="@{'/staff/customer360/' + ${t.customer.id}}"
+               class="btn btn-outline btn-sm">
+              360°
+            </a>
+          </div>
+        </div>
+
+        <!-- Queued / waiting tickets -->
+        <div th:each="t,stat : ${queuedTickets}"
+             th:style="${stat.last}
+                ? 'display:flex;align-items:center;gap:14px;padding:14px 20px'
+                : 'display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border2)'">
+          <div class="avatar"
+               style="width:40px;height:40px;font-size:16px;background:rgba(41,128,185,0.12);color:#5dade2;flex-shrink:0">
+            📱
+          </div>
+
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+              <div style="font-size:13px;font-weight:600"
+                   th:text="${t.customer != null ? t.customer.fullName : 'Unknown'}">
+                Name
+              </div>
+
+              <span th:if="${t.customer != null}"
+                    th:class="'badge ' + (${t.customer.clientTier == 'PLATINUM'} ? 'badge-gold' : (${t.customer.clientTier == 'PRIVATE'} ? 'badge-blue' : 'badge-grey'))"
+                    th:text="${t.customer.clientTier}">
+                TIER
+              </span>
+
+              <span th:class="'badge ' + (${t.status != null and t.status.name()=='ESCALATED'} ? 'badge-orange' : 'badge-grey')"
+                    th:text="${t.status != null ? t.status.name().replace('_',' ') : 'UNKNOWN'}">
+                STATUS
+              </span>
+            </div>
+
+            <div class="text-xs text-muted" th:text="${t.title}">Issue</div>
+            <div class="text-xs text-muted" style="margin-top:2px"
+                 th:text="'Ticket ' + ${t.ticketNumber} + ' · ' + ${t.category}">
+              TKT
+            </div>
+          </div>
+
+          <div style="text-align:right;flex-shrink:0">
+            <span th:class="'badge ' + (${t.priority.name()=='CRITICAL'} ? 'badge-red' : (${t.priority.name()=='HIGH'} ? 'badge-orange' : 'badge-grey'))"
+                  th:text="${t.priority}">
+              PRIORITY
+            </span>
+            <div class="text-xs text-muted" style="margin-top:4px"
+                 th:text="${#temporals.format(t.createdAt,'MMM dd HH:mm')}">
+              Time
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="btn btn-green btn-sm" style="border:none"
+                    th:text="${t.status != null and t.status.name() == 'ESCALATED'} ? 'PRIORITIZE' : 'ANSWER'">
+              ANSWER
+            </button>
+
+            <a th:if="${t.customer != null}"
+               th:href="@{'/staff/customer360/' + ${t.customer.id}}"
+               class="btn btn-outline btn-sm">
+              360°
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

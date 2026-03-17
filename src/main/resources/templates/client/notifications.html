@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Notifications — Aurelius</title><link rel="stylesheet" th:href="@{/css/main.css}"></head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">PRIVATE BANK</div></div></div>
+    <div class="sidebar-user"><div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><div class="s-user-name" th:text="${user.fullName}">James</div><div class="s-user-tier" th:text="${user.clientTier} + ' CLIENT'">STANDARD</div></div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">MAIN</div>
+      <a href="/client/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Overview</a>
+      <a href="/client/accounts" class="nav-item"><span class="nav-icon">🏦</span> Accounts</a>
+      <a href="/client/transactions" class="nav-item"><span class="nav-icon">↕</span> Transactions</a>
+      <a href="/client/transfer" class="nav-item"><span class="nav-icon">➤</span> Transfer Funds</a>
+      <div class="nav-section-lbl">WEALTH</div>
+      <a href="/client/investments" class="nav-item"><span class="nav-icon">📈</span> Investments</a>
+      <a href="/client/cards" class="nav-item"><span class="nav-icon">💳</span> Cards</a>
+      <div class="nav-section-lbl">ACCOUNT</div>
+      <a href="/client/notifications" class="nav-item active"><span class="nav-icon">🔔</span> Notifications</a>
+      <a href="/client/settings" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar"><div class="topbar-title">Notifications</div><div class="topbar-right"><div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><span th:text="${user.fullName}">James</span></div></div></div>
+    <div class="page-content" style="max-width:720px">
+      <div class="page-heading">Notifications</div>
+      <p class="page-sub">Your recent alerts and account updates</p>
+      <div style="display:flex;gap:14px;padding:18px 20px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.2);border-left:3px solid var(--gold);margin-bottom:8px">
+        <div style="font-size:20px;flex-shrink:0">🏦</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600;margin-bottom:5px">Welcome to Aurelius!</div><div style="font-family:sans-serif;font-size:13px;color:var(--muted);line-height:1.6">Your private banking account is ready. Open your first account to start managing your finances.</div><div style="font-family:sans-serif;font-size:10px;color:var(--muted);margin-top:8px">Today</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

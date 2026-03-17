@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Dashboard — Aurelius</title><link rel="stylesheet" th:href="@{/css/main.css}"></head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">PRIVATE BANK</div></div></div>
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div>
+      <div class="s-user-name" th:text="${user.fullName}">James Whitmore</div>
+      <div class="s-user-tier" th:text="${user.clientTier} + ' CLIENT'">PLATINUM CLIENT</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">MAIN</div>
+      <a href="/client/dashboard" class="nav-item active"><span class="nav-icon">⬛</span> Overview</a>
+      <a href="/client/accounts" class="nav-item"><span class="nav-icon">🏦</span> Accounts</a>
+      <a href="/client/transactions" class="nav-item"><span class="nav-icon">↕</span> Transactions</a>
+      <a href="/client/transfer" class="nav-item"><span class="nav-icon">➤</span> Transfer Funds</a>
+      <div class="nav-section-lbl">WEALTH</div>
+      <a href="/client/investments" class="nav-item"><span class="nav-icon">📈</span> Investments</a>
+      <a href="/client/cards" class="nav-item"><span class="nav-icon">💳</span> Cards</a>
+      <div class="nav-section-lbl">ACCOUNT</div>
+      <a href="/client/notifications" class="nav-item"><span class="nav-icon">🔔</span> Notifications
+        <span th:if="${unreadCount > 0}" class="nav-badge" th:text="${unreadCount}">0</span>
+      </a>
+      <a href="/client/settings" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" th:text="'Good morning, ' + ${#strings.substringBefore(user.fullName,' ')} + '!'">Dashboard</div>
+      <div class="topbar-right">
+        <a href="/client/notifications" style="position:relative;text-decoration:none;font-size:18px;color:var(--muted)">🔔
+          <span th:if="${unreadCount > 0}" style="position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:var(--red);color:#fff;font-size:8px;display:flex;align-items:center;justify-content:center;font-family:sans-serif" th:text="${unreadCount}">0</span>
+        </a>
+        <div class="topbar-user">
+          <div class="topbar-av" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div>
+          <span th:text="${user.fullName}">James</span>
+        </div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="page-heading">Financial Overview</div>
+      <p class="page-sub" th:text="${#temporals.format(#temporals.createNow(),'EEEE, MMMM dd yyyy')} + ' · All balances live'">Today</p>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">TOTAL BALANCE <span class="stat-icon">💰</span></div>
+          <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(totalBalance,1,'COMMA',2,'POINT')}">$0</div>
+          <div class="stat-change up">▲ All accounts combined</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">ACCOUNTS <span class="stat-icon">🏦</span></div>
+          <div class="stat-value" th:text="${accounts.size()}">0</div>
+          <div class="stat-change ne" th:text="${accounts.size()} + ' active account(s)'">Active</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">RECENT ACTIVITY <span class="stat-icon">↕</span></div>
+          <div class="stat-value" th:text="${recentTransactions.size()}">0</div>
+          <div class="stat-change ne">Latest transactions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">TIER <span class="stat-icon">⭐</span></div>
+          <div class="stat-value" style="font-size:16px;letter-spacing:0.05em" th:text="${user.clientTier}">STANDARD</div>
+          <div class="stat-change ne">Your banking tier</div>
+        </div>
+      </div>
+
+      <div class="grid-2 grid-2-wide">
+        <!-- Accounts -->
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title">My Accounts</div><a href="/client/accounts" class="panel-action">VIEW ALL →</a></div>
+          <div th:if="${accounts.empty}" style="padding:30px;text-align:center;color:var(--muted);font-family:sans-serif;font-size:13px">
+            Your accounts will appear here once set up by your branch.
+          </div>
+          <div th:each="acc : ${accounts}" style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border2)">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="avatar" th:style="'width:36px;height:36px;font-size:14px;background:' + (${acc.type.name()=='CHECKING'} ? 'rgba(41,128,185,0.15)' : (${acc.type.name()=='SAVINGS'} ? 'rgba(39,174,96,0.15)' : 'rgba(201,168,76,0.15)'))"
+                   th:text="${acc.type.name()=='CHECKING'} ? '🏦' : (${acc.type.name()=='SAVINGS'} ? '💵' : (${acc.type.name()=='BROKERAGE'} ? '📊' : '💳'))">🏦</div>
+              <div>
+                <div style="font-size:12px;font-weight:600" th:text="${acc.type.name().replace('_',' ')}">Type</div>
+                <div class="text-xs text-muted mono" th:text="'•••• ' + ${acc.accountNumber}">•••• 0000</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-family:Georgia;font-size:14px" th:class="${acc.balance.signum() < 0} ? 'text-red' : ''" th:text="'$' + ${#numbers.formatDecimal(acc.balance,1,'COMMA',2,'POINT')}">$0</div>
+              <div class="text-xs" th:class="${acc.status=='FROZEN'} ? 'text-red text-xs' : 'text-muted text-xs'" th:text="${acc.status}">ACTIVE</div>
+            </div>
+          </div>
+        </div>
+        <!-- Transactions -->
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title">Recent Transactions</div><a href="/client/transactions" class="panel-action">VIEW ALL →</a></div>
+          <div th:if="${recentTransactions.empty}" style="padding:30px;text-align:center;color:var(--muted);font-family:sans-serif;font-size:13px">No transactions yet.</div>
+          <div th:each="tx : ${recentTransactions}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border2)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="avatar" th:style="'width:30px;height:30px;font-size:12px;background:' + (${tx.type.name()=='CREDIT'} ? 'rgba(39,174,96,0.15)' : 'rgba(41,128,185,0.15)') + ';color:' + (${tx.type.name()=='CREDIT'} ? 'var(--green)' : '#5dade2')"
+                   th:text="${tx.type.name()=='CREDIT'} ? '↓' : '↑'">↑</div>
+              <div>
+                <div class="text-sm" th:text="${#strings.abbreviate(tx.description,30)}">Desc</div>
+                <div class="text-xs text-muted" th:text="${#temporals.format(tx.createdAt,'MMM dd')}">Date</div>
+              </div>
+            </div>
+            <div style="font-family:Georgia;font-size:13px" th:class="${tx.type.name()=='CREDIT'} ? 'text-green' : ''"
+                 th:text="(${tx.type.name()=='CREDIT'} ? '+$' : '-$') + ${#numbers.formatDecimal(tx.amount.abs(),1,'COMMA',2,'POINT')}">$0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

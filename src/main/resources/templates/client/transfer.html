@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Transfer — Aurelius</title><link rel="stylesheet" th:href="@{/css/main.css}"></head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">PRIVATE BANK</div></div></div>
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div>
+      <div class="s-user-name" th:text="${user.fullName}">James</div>
+      <div class="s-user-tier" th:text="${user.clientTier} + ' CLIENT'">PLATINUM</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">MAIN</div>
+      <a href="/client/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Overview</a>
+      <a href="/client/accounts" class="nav-item"><span class="nav-icon">🏦</span> Accounts</a>
+      <a href="/client/transactions" class="nav-item"><span class="nav-icon">↕</span> Transactions</a>
+      <a href="/client/transfer" class="nav-item active"><span class="nav-icon">➤</span> Transfer Funds</a>
+      <div class="nav-section-lbl">WEALTH</div>
+      <a href="/client/investments" class="nav-item"><span class="nav-icon">📈</span> Investments</a>
+      <a href="/client/cards" class="nav-item"><span class="nav-icon">💳</span> Cards</a>
+      <div class="nav-section-lbl">ACCOUNT</div>
+      <a href="/client/notifications" class="nav-item"><span class="nav-icon">🔔</span> Notifications</a>
+      <a href="/client/settings" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Transfer Funds</div>
+      <div class="topbar-right"><div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><span th:text="${user.fullName}">James</span></div></div>
+    </div>
+    <div class="page-content">
+      <div class="page-heading">Transfer Funds</div>
+      <p class="page-sub">Move money between your accounts securely</p>
+
+      <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title">Internal Transfer</div></div>
+          <form method="post" th:action="@{/client/transfer}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="form-group">
+              <label class="form-lbl">FROM ACCOUNT</label>
+              <select name="fromAccount" class="form-ctrl" required>
+                <option th:each="acc : ${accounts}"
+                        th:value="${acc.accountNumber}"
+                        th:text="${acc.type} + ' •••• ' + ${acc.accountNumber} + ' — $' + ${#numbers.formatDecimal(acc.balance,1,'COMMA',0,'POINT')}">
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-lbl">TO ACCOUNT</label>
+              <select name="toAccount" class="form-ctrl" required>
+                <option th:each="acc : ${accounts}"
+                        th:value="${acc.accountNumber}"
+                        th:text="${acc.type} + ' •••• ' + ${acc.accountNumber}">
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-lbl">AMOUNT (USD)</label>
+              <div style="position:relative">
+                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:16px">$</span>
+                <input type="number" name="amount" class="form-ctrl" style="padding-left:30px;font-size:18px;font-family:Georgia" placeholder="0.00" step="0.01" min="0.01" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-lbl">NOTE (OPTIONAL)</label>
+              <input type="text" name="note" class="form-ctrl" placeholder="e.g. Monthly savings transfer">
+            </div>
+            <button type="submit" class="btn btn-gold btn-full" style="padding:14px;font-size:12px;letter-spacing:0.15em">CONFIRM TRANSFER →</button>
+          </form>
+        </div>
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-hdr"><div class="panel-title">Wire Transfer</div></div>
+            <div class="form-group"><label class="form-lbl">BENEFICIARY NAME</label><input class="form-ctrl" placeholder="Full legal name"></div>
+            <div class="form-group"><label class="form-lbl">ROUTING / SWIFT</label><input class="form-ctrl" placeholder="e.g. 021000021 or CHASUS33"></div>
+            <div class="form-group"><label class="form-lbl">ACCOUNT NUMBER</label><input class="form-ctrl" placeholder="Recipient account number"></div>
+            <div class="form-group"><label class="form-lbl">AMOUNT (USD)</label><input type="number" class="form-ctrl" placeholder="0.00"></div>
+            <button class="btn btn-outline btn-full" style="padding:14px;font-size:12px;letter-spacing:0.15em">INITIATE WIRE →</button>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr"><div class="panel-title">Account Balances</div></div>
+            <div th:each="acc : ${accounts}" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border2)">
+              <div class="text-sm" th:text="'•••• ' + ${acc.accountNumber} + ' — ' + ${acc.type}">•••• 4821</div>
+              <div style="font-family:Georgia" th:text="'$' + ${#numbers.formatDecimal(acc.balance,1,'COMMA',0,'POINT')}">$182,450</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

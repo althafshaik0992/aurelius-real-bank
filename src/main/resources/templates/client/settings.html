@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Settings — Aurelius</title><link rel="stylesheet" th:href="@{/css/main.css}"></head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">PRIVATE BANK</div></div></div>
+    <div class="sidebar-user"><div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><div class="s-user-name" th:text="${user.fullName}">James</div><div class="s-user-tier" th:text="${user.clientTier} + ' CLIENT'">PLATINUM</div></div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">MAIN</div>
+      <a href="/client/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Overview</a>
+      <a href="/client/accounts" class="nav-item"><span class="nav-icon">🏦</span> Accounts</a>
+      <a href="/client/transactions" class="nav-item"><span class="nav-icon">↕</span> Transactions</a>
+      <a href="/client/transfer" class="nav-item"><span class="nav-icon">➤</span> Transfer Funds</a>
+      <div class="nav-section-lbl">WEALTH</div>
+      <a href="/client/investments" class="nav-item"><span class="nav-icon">📈</span> Investments</a>
+      <a href="/client/cards" class="nav-item"><span class="nav-icon">💳</span> Cards</a>
+      <div class="nav-section-lbl">ACCOUNT</div>
+      <a href="/client/notifications" class="nav-item"><span class="nav-icon">🔔</span> Notifications</a>
+      <a href="/client/settings" class="nav-item active"><span class="nav-icon">⚙</span> Settings</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar"><div class="topbar-title">Settings</div><div class="topbar-right"><div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><span th:text="${user.fullName}">James</span></div></div></div>
+    <div class="page-content">
+      <div class="page-heading">Account Settings</div>
+      <p class="page-sub">Manage your profile and security preferences</p>
+      <div class="grid-2">
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-hdr"><div class="panel-title">Personal Information</div></div>
+            <div class="form-group"><label class="form-lbl">FULL NAME</label><input class="form-ctrl" th:value="${user.fullName}"></div>
+            <div class="form-group"><label class="form-lbl">EMAIL ADDRESS</label><input class="form-ctrl" type="email" th:value="${user.email}"></div>
+            <div class="form-group"><label class="form-lbl">PHONE NUMBER</label><input class="form-ctrl" value="+1 (212) 555-0142"></div>
+            <button class="btn btn-gold" style="padding:12px 28px">SAVE CHANGES</button>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-hdr"><div class="panel-title">Security</div></div>
+            <div class="form-group"><label class="form-lbl">CURRENT PASSWORD</label><input class="form-ctrl" type="password" placeholder="••••••••••"></div>
+            <div class="form-group"><label class="form-lbl">NEW PASSWORD</label><input class="form-ctrl" type="password" placeholder="••••••••••"></div>
+            <div class="form-group"><label class="form-lbl">CONFIRM PASSWORD</label><input class="form-ctrl" type="password" placeholder="••••••••••"></div>
+            <button class="btn btn-outline" style="padding:12px 28px">UPDATE PASSWORD</button>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr"><div class="panel-title">Preferences</div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);font-size:13px;color:var(--muted)">Email Alerts <input type="checkbox" checked style="accent-color:var(--gold);width:16px;height:16px"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);font-size:13px;color:var(--muted)">SMS Notifications <input type="checkbox" checked style="accent-color:var(--gold);width:16px;height:16px"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;font-size:13px;color:var(--muted)">Two-Factor Auth <input type="checkbox" checked style="accent-color:var(--gold);width:16px;height:16px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

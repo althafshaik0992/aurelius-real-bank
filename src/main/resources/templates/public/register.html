@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Create Account — Aurelius Private Bank</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0A1628;--gold:#C9A84C;--gold2:#E8C97A;--muted:#7A8795;--green:#27ae60;--red:#e74c3c}
+body{font-family:Georgia,'Times New Roman',serif;background:linear-gradient(135deg,#060d18 0%,#0a1525 50%,#0d1e35 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fff;position:relative;overflow:hidden}
+.grid-bg{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(201,168,76,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.04) 1px,transparent 1px);background-size:48px 48px}
+.glow{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,0.07) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.wrap{display:flex;width:980px;min-height:600px;position:relative;z-index:2;border:1px solid rgba(201,168,76,0.15);box-shadow:0 32px 80px rgba(0,0,0,0.5)}
+/* Left */
+.left{flex:1;padding:56px 52px;background:rgba(10,22,40,0.6);display:flex;flex-direction:column;justify-content:space-between}
+.logo-wrap{display:flex;align-items:center;gap:14px;margin-bottom:44px}
+.lc{width:40px;height:40px;border:1.5px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px}
+.ln{font-size:20px;letter-spacing:0.15em}
+.ls{font-size:8px;letter-spacing:0.3em;color:var(--gold);font-family:sans-serif}
+h1{font-size:38px;font-weight:normal;line-height:1.2;margin-bottom:14px}
+h1 em{color:var(--gold);font-style:italic}
+.desc{color:rgba(255,255,255,0.52);font-family:sans-serif;font-size:14px;line-height:1.8;margin-bottom:28px}
+.steps{display:flex;flex-direction:column;gap:16px}
+.step-item{display:flex;align-items:flex-start;gap:14px}
+.step-num{width:28px;height:28px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:sans-serif;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-text{font-family:sans-serif;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.5}
+.step-text strong{color:#fff;display:block;font-size:13px;margin-bottom:2px}
+/* Right */
+.right{width:460px;background:rgba(10,22,40,0.95);border-left:1px solid rgba(201,168,76,0.12);padding:40px}
+.back{font-family:sans-serif;font-size:12px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:28px;transition:color 0.2s}
+.back:hover{color:var(--gold)}
+.form-title{font-size:22px;font-weight:normal;margin-bottom:4px}
+.form-sub{font-family:sans-serif;font-size:13px;color:var(--muted);margin-bottom:18px}
+.gold-bar{width:36px;height:2px;background:var(--gold);margin-bottom:22px}
+.fg{margin-bottom:15px}
+.fg label{font-family:sans-serif;font-size:9px;letter-spacing:0.22em;color:var(--gold);display:block;margin-bottom:6px}
+.fg input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:12px 14px;font-size:13px;font-family:sans-serif;outline:none;transition:border-color 0.2s}
+.fg input:focus{border-color:var(--gold);background:rgba(201,168,76,0.05)}
+.fg input.err{border-color:var(--red)}
+.fg input::placeholder{color:rgba(255,255,255,0.22)}
+.btn{width:100%;background:var(--gold);color:var(--navy);border:none;padding:14px;font-size:11px;letter-spacing:0.2em;font-family:sans-serif;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:6px;margin-bottom:14px}
+.btn:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(201,168,76,0.3)}
+.alert-e{background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);color:var(--red);padding:10px 14px;font-family:sans-serif;font-size:12px;margin-bottom:14px}
+.secure{display:flex;align-items:center;gap:7px;font-family:sans-serif;font-size:11px;color:var(--muted);justify-content:center}
+.signin-link{text-align:center;font-family:sans-serif;font-size:13px;color:var(--muted);margin-top:14px}
+.signin-link a{color:var(--gold);text-decoration:none}
+.strength-bar{height:3px;background:rgba(255,255,255,0.08);margin-top:6px}
+.strength-fill{height:100%;width:0;transition:width 0.3s,background 0.3s}
+.strength-label{font-family:sans-serif;font-size:10px;color:var(--muted);margin-top:3px}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow"></div>
+<div class="wrap">
+
+  <!-- LEFT: Onboarding info -->
+  <div class="left">
+    <div>
+      <div class="logo-wrap">
+        <div class="lc">A</div>
+        <div><div class="ln">AURELIUS</div><div class="ls">PRIVATE BANK</div></div>
+      </div>
+      <h1>Start Your<br><em>Banking Journey</em></h1>
+      <p class="desc">Open your Aurelius account in minutes. No branch visit required — everything is handled securely online.</p>
+      <div class="steps">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Create your account</strong>Enter your name, email and a strong password</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Open a bank account</strong>Choose from Checking, Savings, Brokerage or Credit Card</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-text"><strong>Verify your identity (KYC)</strong>Upload your ID and verify your phone — auto-approved instantly</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-text"><strong>Start banking</strong>Transfer, invest and manage your wealth</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-family:sans-serif;font-size:11px;color:var(--muted);margin-top:32px;line-height:1.7">
+      🔒 256-bit SSL · FDIC Insured · Instant KYC approval
+    </div>
+  </div>
+
+  <!-- RIGHT: Registration form -->
+  <div class="right">
+    <a href="/login" class="back">← Back to Sign In</a>
+    <div class="form-title">Create Your Account</div>
+    <p class="form-sub">Fill in your details to get started</p>
+    <div class="gold-bar"></div>
+
+    <div th:if="${error}" class="alert-e" th:text="${error}"></div>
+
+    <form method="post" th:action="@{/register}" onsubmit="return validateForm()">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+      <div class="fg">
+        <label>FULL NAME</label>
+        <input type="text" name="fullName" id="r-name" placeholder="e.g. James Whitmore"
+               th:value="${prefillName}" required autocomplete="name" oninput="clearErr(this)">
+      </div>
+
+      <div class="fg">
+        <label>EMAIL ADDRESS</label>
+        <input type="email" name="email" id="r-email" placeholder="your@email.com"
+               th:value="${prefillEmail}" required autocomplete="email" oninput="clearErr(this)">
+      </div>
+
+      <div class="fg">
+        <label>PASSWORD</label>
+        <input type="password" name="password" id="r-pw" placeholder="Minimum 8 characters"
+               required autocomplete="new-password" oninput="checkStrength(this.value);clearErr(this)">
+        <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+        <div class="strength-label" id="strength-label"></div>
+      </div>
+
+      <div class="fg">
+        <label>CONFIRM PASSWORD</label>
+        <input type="password" name="confirmPassword" id="r-confirm" placeholder="Re-enter your password"
+               required autocomplete="new-password" oninput="clearErr(this)">
+      </div>
+
+      <div id="client-err" style="display:none" class="alert-e"></div>
+
+      <button type="submit" class="btn">CREATE ACCOUNT &amp; SIGN IN →</button>
+    </form>
+
+    <div class="secure">🔒 Your data is encrypted and never shared</div>
+    <div class="signin-link">Already have an account? <a href="/login">Sign in →</a></div>
+  </div>
+</div>
+
+<script>
+function checkStrength(pw) {
+  const fill = document.getElementById('strength-fill');
+  const label = document.getElementById('strength-label');
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const cols = ['','#e74c3c','#e67e22','#f39c12','#27ae60'];
+  const lbls = ['','Weak','Fair','Good','Strong ✓'];
+  fill.style.width = (score * 25) + '%';
+  fill.style.background = cols[score] || '';
+  label.textContent = pw ? (lbls[score] || '') : '';
+  label.style.color = cols[score] || '';
+}
+function clearErr(el) { el.classList.remove('err'); }
+function validateForm() {
+  const name = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const pw = document.getElementById('r-pw').value;
+  const confirm = document.getElementById('r-confirm').value;
+  const errEl = document.getElementById('client-err');
+
+  const show = (msg, id) => {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    if (id) document.getElementById(id).classList.add('err');
+    return false;
+  };
+
+  if (name.length < 2) return show('Full name must be at least 2 characters.', 'r-name');
+  if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) return show('Please enter a valid email address.', 'r-email');
+  if (pw.length < 8) return show('Password must be at least 8 characters.', 'r-pw');
+  if (pw !== confirm) return show('Passwords do not match. Please re-enter.', 'r-confirm');
+  return true;
+}
+</script>
+</body>
+</html>

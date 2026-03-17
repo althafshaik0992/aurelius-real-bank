@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Staff Login — Aurelius Bank</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--dark:#080f1a;--gold:#C9A84C;--gold2:#E8C97A;--muted:#6b7a8d;--text:#e8edf3}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#060d18 0%,#0a1525 50%,#0d1e35 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--text);position:relative;overflow:hidden}
+.grid-bg{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(201,168,76,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.04) 1px,transparent 1px);background-size:48px 48px}
+.glow{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,0.06) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.box{width:480px;background:rgba(12,21,34,0.92);border:1px solid rgba(201,168,76,0.14);padding:48px;position:relative;z-index:2}
+.staff-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);padding:6px 16px;margin-bottom:24px}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.badge-text{font-size:10px;letter-spacing:0.2em;color:var(--gold)}
+.header{text-align:center;margin-bottom:32px}
+.logo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px}
+.lc{width:36px;height:36px;border:1.5px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:17px;font-family:Georgia}
+.lt{font-size:18px;letter-spacing:0.15em;font-family:Georgia}
+.ls{font-size:9px;letter-spacing:0.25em;color:var(--muted)}
+.divider{width:44px;height:1px;background:var(--gold);margin:24px auto}
+.fl{display:flex;flex-direction:column;gap:5px;margin-bottom:18px}
+.fl label{font-size:9px;letter-spacing:0.2em;color:var(--gold)}
+.fl input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:12px 14px;font-size:13px;font-family:inherit;outline:none;transition:border-color 0.2s}
+.fl input:focus{border-color:var(--gold);background:rgba(201,168,76,0.05)}
+.fl input::placeholder{color:rgba(255,255,255,0.2)}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
+.role-card{border:1px solid rgba(255,255,255,0.08);padding:12px;cursor:pointer;transition:all 0.18s;background:rgba(255,255,255,0.02);text-align:center}
+.role-card:hover,.role-card.sel{border-color:var(--gold);background:rgba(201,168,76,0.07)}
+.ri{font-size:22px;margin-bottom:5px}
+.rn{font-size:11px;font-weight:600;letter-spacing:0.04em;margin-bottom:2px}
+.rd{font-size:10px;color:var(--muted)}
+.ra-agent{color:#27ae60}.ra-manager{color:#2980b9}.ra-compliance{color:#e67e22}.ra-admin{color:var(--gold)}
+.btn{width:100%;background:var(--gold);color:var(--dark);border:none;padding:14px;font-size:11px;letter-spacing:0.2em;font-family:inherit;font-weight:700;cursor:pointer;transition:all 0.25s;margin-top:4px}
+.btn:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 8px 28px rgba(201,168,76,0.3)}
+.footer-note{margin-top:20px;text-align:center;font-size:11px;color:var(--muted);line-height:1.6}
+.footer-note a{color:var(--gold);text-decoration:none}
+.alert-error{background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);color:#e74c3c;padding:11px 14px;font-size:12px;margin-bottom:16px}
+.demo-box{margin-top:16px;padding:12px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.15);font-size:11px;color:var(--muted);text-align:center;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow"></div>
+<div class="box">
+  <div class="header">
+    <div class="staff-badge"><div class="badge-dot"></div><span class="badge-text">STAFF ACCESS ONLY</span></div>
+    <div class="logo"><div class="lc">A</div><div class="lt">AURELIUS</div></div>
+    <div class="ls">EMPLOYEE STAFF PORTAL</div>
+  </div>
+  <div class="divider"></div>
+  <div th:if="${param.error}" class="alert-error">⚠ Invalid credentials. Please try again.</div>
+  <form method="post" th:action="@{/login}">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <div class="fl"><label>EMPLOYEE EMAIL</label><input type="email" name="username" placeholder="name@aurelius-staff.com" required></div>
+    <div class="fl"><label>PASSWORD</label><input type="password" name="password" placeholder="••••••••••••" required></div>
+    <div style="font-size:9px;letter-spacing:0.2em;color:var(--gold);margin-bottom:10px">SELECT YOUR ROLE (informational)</div>
+    <div class="role-grid">
+      <div class="role-card" onclick="this.classList.toggle('sel')"><div class="ri">🎧</div><div class="rn ra-agent">Support Agent</div><div class="rd">Handle calls &amp; tickets</div></div>
+      <div class="role-card sel" onclick="this.classList.toggle('sel')"><div class="ri">🏛</div><div class="rn ra-manager">Branch Manager</div><div class="rd">Approve transactions</div></div>
+      <div class="role-card" onclick="this.classList.toggle('sel')"><div class="ri">🔍</div><div class="rn ra-compliance">Compliance Officer</div><div class="rd">Flag &amp; investigate</div></div>
+      <div class="role-card" onclick="this.classList.toggle('sel')"><div class="ri">⚡</div><div class="rn ra-admin">Super Admin</div><div class="rd">Full system access</div></div>
+    </div>
+    <button type="submit" class="btn">ACCESS STAFF PORTAL</button>
+  </form>
+  <div class="footer-note">
+    Secure staff access · Session logged · <a href="/login">Client login →</a><br>
+    <span style="color:#e74c3c">Unauthorized access is a criminal offence</span>
+  </div>
+  <div class="demo-box">
+    <strong style="color:var(--gold)">Demo Staff Accounts:</strong><br>
+    sarah.chen@aurelius-staff.com / staff2026 (Manager)<br>
+    mike.torres@aurelius-staff.com / staff2026 (Compliance)
+  </div>
+</div>
+</body>
+</html>

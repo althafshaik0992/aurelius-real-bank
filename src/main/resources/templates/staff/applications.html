@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Client Applications — Aurelius Staff</title><link rel="stylesheet" th:href="@{/css/main.css}"></head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">STAFF HUB</div></div></div>
+    <div class="sidebar-user"><div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div><div class="s-user-name" th:text="${staff.fullName}">Sarah</div><div class="s-user-tier" th:text="${staff.role.name().replace('_',' ')}">MANAGER</div><div class="s-user-id" th:text="${staff.badgeId}">ID</div></div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">OPERATIONS</div>
+      <a href="/staff/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="/staff/applications" class="nav-item active"><span class="nav-icon">📋</span> Client Applications <span class="nav-badge" th:if="${pendingCount > 0}" th:text="${pendingCount}">0</span></a>
+      <a href="/staff/call-queue" class="nav-item"><span class="nav-icon">📞</span> Call Queue</a>
+      <a href="/staff/tickets" class="nav-item"><span class="nav-icon">🎫</span> Support Tickets</a>
+      <div class="nav-section-lbl">CUSTOMERS</div>
+      <a href="/staff/customers" class="nav-item"><span class="nav-icon">👥</span> Active Clients</a>
+      <div class="nav-section-lbl">CONTROLS</div>
+      <a href="/staff/approvals" class="nav-item"><span class="nav-icon">✅</span> Approvals</a>
+      <a href="/staff/alerts" class="nav-item"><span class="nav-icon">🔔</span> Send Alerts</a>
+      <div class="nav-section-lbl">REPORTING</div>
+      <a href="/staff/reports" class="nav-item"><span class="nav-icon">📊</span> Reports</a>
+      <a href="/staff/audit-log" class="nav-item"><span class="nav-icon">📋</span> Audit Log</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Client Applications</div>
+      <div class="topbar-right">
+        <form method="post" th:action="@{/staff/applications/cleanup}" style="display:inline">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit" class="btn btn-sm" style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);color:var(--red);margin-right:6px"
+                onclick="return confirm('Delete all incomplete applications?')">🧹 CLEAN UP</button>
+      </form>
+      <a href="/staff/applications/new" class="btn btn-gold btn-sm">+ NEW APPLICATION</a>
+        <div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div><span th:text="${staff.fullName}">Sarah</span></div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="page-heading">📋 Client Applications</div>
+      <p class="page-sub">All new client onboarding applications with KYC documents</p>
+      <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+      <div class="search-bar">
+        <a href="/staff/applications" th:class="'filter-btn ' + (${statusFilter == null} ? 'active' : '')">ALL</a>
+        <a href="/staff/applications?status=PENDING_REVIEW" th:class="'filter-btn ' + (${statusFilter == 'PENDING_REVIEW'} ? 'active' : '')">PENDING <span th:if="${pendingCount > 0}" th:text="'(' + ${pendingCount} + ')'"></span></a>
+        <a href="/staff/applications?status=UNDER_REVIEW" th:class="'filter-btn ' + (${statusFilter == 'UNDER_REVIEW'} ? 'active' : '')">UNDER REVIEW</a>
+        <a href="/staff/applications?status=APPROVED" th:class="'filter-btn ' + (${statusFilter == 'APPROVED'} ? 'active' : '')">APPROVED</a>
+        <a href="/staff/applications?status=ACCESS_GRANTED" th:class="'filter-btn ' + (${statusFilter == 'ACCESS_GRANTED'} ? 'active' : '')">ACCESS GRANTED</a>
+        <a href="/staff/applications?status=REJECTED" th:class="'filter-btn ' + (${statusFilter == 'REJECTED'} ? 'active' : '')">REJECTED</a>
+      </div>
+      <div class="panel panel-no-pad">
+        <table class="data-table">
+          <thead><tr><th>CLIENT</th><th>EMAIL</th><th>ID TYPE</th><th>ACCOUNT</th><th>TIER</th><th>SUBMITTED</th><th>STAFF</th><th>STATUS</th><th>ACTION</th></tr></thead>
+          <tbody>
+            <tr th:each="app : ${applications}">
+              <td><div style="font-weight:600;font-size:13px" th:text="${app.fullName}">Name</div></td>
+              <td class="text-muted text-sm" th:text="${app.email}">email</td>
+              <td><span class="badge badge-blue" th:if="${app.idType != null}" th:text="${app.idType.replace('_',' ')}">ID</span></td>
+              <td class="text-sm" th:text="${app.accountType != null ? app.accountType.replace('_',' ') : '—'}">Type</td>
+              <td><span th:class="'badge ' + (${app.initialTier == 'PLATINUM'} ? 'badge-gold' : (${app.initialTier == 'PRIVATE'} ? 'badge-blue' : 'badge-grey'))" th:text="${app.initialTier ?: 'STANDARD'}">TIER</span></td>
+              <td class="text-muted text-sm" th:text="${#temporals.format(app.createdAt,'MMM dd HH:mm')}">Date</td>
+              <td class="text-muted text-sm" th:text="${app.createdByStaff != null ? app.createdByStaff.fullName : '—'}">Staff</td>
+              <td>
+                <span th:class="'badge ' + (${app.status != null && app.status.name() == 'PENDING_REVIEW'} ? 'badge-orange' : (${app.status != null && app.status.name() == 'UNDER_REVIEW'} ? 'badge-blue' : (${app.status != null && app.status.name() == 'APPROVED'} ? 'badge-green' : (${app.status != null && app.status.name() == 'ACCESS_GRANTED'} ? 'badge-green' : 'badge-red'))))"
+                      th:text="${app.status != null ? app.status.name().replace('_',' ') : 'UNKNOWN'}">STATUS</span>
+              </td>
+              <td style="white-space:nowrap">
+                <form th:if="${app.id != null}"
+                      method="get"
+                      th:action="@{/staff/applications/review}"
+                      style="display:inline-block">
+                  <input type="hidden" name="id" th:value="${app.id}">
+                  <button type="submit" class="btn btn-outline btn-sm">REVIEW</button>
+                </form>
+
+                <form th:if="${app.id != null && app.status != null && (app.status.name() == 'REJECTED' || (app.fullName == null || #strings.isEmpty(app.fullName)))}"
+                      method="post"
+                      th:action="@{'/staff/applications/' + ${app.id} + '/delete'}"
+                      style="display:inline-block;margin-left:4px">
+                  <button type="submit" class="btn btn-danger btn-sm">DELETE</button>
+                </form>
+              </td>
+            </tr>
+            <tr th:if="${applications.empty}"><td colspan="9" style="text-align:center;color:var(--muted);padding:40px">No applications found. <a href="/staff/applications/new" style="color:var(--gold)">Create one →</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Cards — Aurelius</title><link rel="stylesheet" th:href="@{/css/main.css}"></head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">PRIVATE BANK</div></div></div>
+    <div class="sidebar-user"><div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><div class="s-user-name" th:text="${user.fullName}">James</div><div class="s-user-tier" th:text="${user.clientTier} + ' CLIENT'">PLATINUM</div></div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">MAIN</div>
+      <a href="/client/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Overview</a>
+      <a href="/client/accounts" class="nav-item"><span class="nav-icon">🏦</span> Accounts</a>
+      <a href="/client/transactions" class="nav-item"><span class="nav-icon">↕</span> Transactions</a>
+      <a href="/client/transfer" class="nav-item"><span class="nav-icon">➤</span> Transfer Funds</a>
+      <div class="nav-section-lbl">WEALTH</div>
+      <a href="/client/investments" class="nav-item"><span class="nav-icon">📈</span> Investments</a>
+      <a href="/client/cards" class="nav-item active"><span class="nav-icon">💳</span> Cards</a>
+      <div class="nav-section-lbl">ACCOUNT</div>
+      <a href="/client/notifications" class="nav-item"><span class="nav-icon">🔔</span> Notifications</a>
+      <a href="/client/settings" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar"><div class="topbar-title">Cards</div><div class="topbar-right"><div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><span th:text="${user.fullName}">James</span></div></div></div>
+    <div class="page-content">
+      <div class="page-heading">My Cards</div>
+      <p class="page-sub">Manage your payment cards</p>
+      <div class="grid-2" style="margin-bottom:20px">
+        <div style="background:linear-gradient(135deg,#1a2f4a 0%,#0A1628 100%);border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:28px;height:190px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between">
+          <div style="position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,0.1) 0%,transparent 70%);top:-60px;right:-60px"></div>
+          <div style="display:flex;justify-content:space-between"><div style="width:40px;height:30px;background:#C9A84C;border-radius:4px"></div><div style="font-family:sans-serif;font-size:10px;letter-spacing:0.2em;color:#C9A84C">PLATINUM</div></div>
+          <div style="font-family:'Courier New';font-size:16px;letter-spacing:0.2em">•••• •••• •••• 9912</div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end"><div><div style="font-family:sans-serif;font-size:11px;letter-spacing:0.15em;color:rgba(255,255,255,0.8)" th:text="${user.fullName}">JAMES WHITMORE</div></div><div style="font-family:sans-serif;font-size:22px;color:#C9A84C;font-weight:900">VISA</div></div>
+        </div>
+        <div class="panel">
+          <div class="stats-row-3 stats-row">
+            <div class="stat-card"><div class="stat-label">BALANCE</div><div class="stat-value text-red" style="font-size:20px">$24,181</div></div>
+            <div class="stat-card"><div class="stat-label">AVAILABLE</div><div class="stat-value" style="font-size:20px">$225,819</div></div>
+            <div class="stat-card"><div class="stat-label">DUE DATE</div><div class="stat-value text-green" style="font-size:20px">Apr 1</div></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <button class="btn btn-gold" style="flex:1">PAY BALANCE</button>
+            <button class="btn btn-red" style="flex:1">BLOCK CARD</button>
+          </div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">REWARDS POINTS</div><div class="stat-value text-gold">847,290</div><div class="stat-change up">▲ +12,400 this week</div></div>
+        <div class="stat-card"><div class="stat-label">CASHBACK YTD</div><div class="stat-value">$1,284</div><div class="stat-change up">▲ 3% on all spends</div></div>
+        <div class="stat-card"><div class="stat-label">CREDIT LIMIT</div><div class="stat-value">$250,000</div><div class="stat-change ne">Platinum tier</div></div>
+        <div class="stat-card"><div class="stat-label">MONTHLY SPEND</div><div class="stat-value">$24,180</div><div class="stat-change dn">▼ -8% vs last month</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>New Client Application — Aurelius Staff</title><link rel="stylesheet" th:href="@{/css/main.css}">
+<style>
+.form-section{background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:22px 24px;margin-bottom:14px}
+.fs-title{font-size:13px;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.fs-sub{font-size:11px;color:var(--muted);margin-bottom:16px}
+.id-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.id-card{border:1px solid rgba(255,255,255,0.12);padding:14px 8px;cursor:pointer;text-align:center;background:rgba(255,255,255,0.02);transition:all 0.2s;user-select:none}
+.id-card:hover{border-color:rgba(201,168,76,0.5);background:rgba(201,168,76,0.05)}
+.id-card.sel{border-color:var(--gold);background:rgba(201,168,76,0.09)}
+.id-card input[type=radio]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.upload-area{border:2px dashed rgba(201,168,76,0.3);padding:24px;text-align:center;cursor:pointer;background:rgba(201,168,76,0.02);transition:all 0.2s;position:relative}
+.upload-area:hover{border-color:var(--gold);background:rgba(201,168,76,0.05)}
+.upload-area.done{border-color:var(--green);background:rgba(39,174,96,0.04)}
+.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+</style>
+</head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">STAFF HUB</div></div></div>
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+      <div class="s-user-name" th:text="${staff.fullName}">Sarah</div>
+      <div class="s-user-tier" th:text="${staff.role.name().replace('_',' ')}">MANAGER</div>
+      <div class="s-user-id" th:text="${staff.badgeId}">ID</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">OPERATIONS</div>
+      <a href="/staff/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="/staff/applications" class="nav-item active"><span class="nav-icon">📋</span> Client Applications</a>
+      <a href="/staff/call-queue" class="nav-item"><span class="nav-icon">📞</span> Call Queue</a>
+      <a href="/staff/tickets" class="nav-item"><span class="nav-icon">🎫</span> Support Tickets</a>
+      <div class="nav-section-lbl">CUSTOMERS</div>
+      <a href="/staff/customers" class="nav-item"><span class="nav-icon">👥</span> Active Clients</a>
+      <div class="nav-section-lbl">CONTROLS</div>
+      <a href="/staff/approvals" class="nav-item"><span class="nav-icon">✅</span> Approvals</a>
+      <a href="/staff/alerts" class="nav-item"><span class="nav-icon">🔔</span> Send Alerts</a>
+      <div class="nav-section-lbl">REPORTING</div>
+      <a href="/staff/reports" class="nav-item"><span class="nav-icon">📊</span> Reports</a>
+      <a href="/staff/audit-log" class="nav-item"><span class="nav-icon">📋</span> Audit Log</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">New Client Application</div>
+      <div class="topbar-right">
+        <a href="/staff/applications" class="btn btn-outline btn-sm">← BACK</a>
+        <div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div><span th:text="${staff.fullName}">Sarah</span></div>
+      </div>
+    </div>
+
+    <div class="page-content" style="max-width:920px">
+      <div class="page-heading">New Client Application</div>
+      <p class="page-sub">Complete all sections — KYC documents required before submission</p>
+
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+      <form method="post" th:action="@{/staff/applications/new}" enctype="multipart/form-data" id="app-form" onsubmit="return validateForm()">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <!-- LEFT COLUMN -->
+          <div>
+            <!-- Personal Info -->
+            <div class="form-section">
+              <div class="fs-title">👤 Personal Information</div>
+              <div class="fs-sub">As shown on government ID — must be exact</div>
+              <div class="form-group"><label class="form-lbl">FULL LEGAL NAME *</label>
+                <input name="fullName" class="form-ctrl" placeholder="First Middle Last" required minlength="2"></div>
+              <div class="form-row-2">
+                <div class="form-group"><label class="form-lbl">DATE OF BIRTH *</label>
+                  <input name="dateOfBirth" type="date" class="form-ctrl" required max="2010-01-01"></div>
+                <div class="form-group"><label class="form-lbl">NATIONALITY *</label>
+                  <select name="nationality" class="form-ctrl" required>
+                    <option value="">Select...</option>
+                    <option value="US">United States</option>
+                    <option value="UK">United Kingdom</option>
+                    <option value="CA">Canada</option>
+                    <option value="AU">Australia</option>
+                    <option value="IN">India</option>
+                    <option value="SG">Singapore</option>
+                    <option value="AE">UAE</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group"><label class="form-lbl">EMAIL ADDRESS *</label>
+                  <input name="email" type="email" class="form-ctrl" placeholder="client@email.com" required></div>
+                <div class="form-group"><label class="form-lbl">PHONE NUMBER *</label>
+                  <input name="phoneNumber" class="form-ctrl" placeholder="+1 555-000-0000" required></div>
+              </div>
+            </div>
+
+            <!-- Address -->
+            <div class="form-section">
+              <div class="fs-title">🏠 Home Address</div>
+              <div class="fs-sub">Client's current residential address</div>
+              <div class="form-group"><label class="form-lbl">ADDRESS LINE 1 *</label>
+                <input name="addressLine1" class="form-ctrl" placeholder="Street number and name" required></div>
+              <div class="form-group"><label class="form-lbl">ADDRESS LINE 2</label>
+                <input name="addressLine2" class="form-ctrl" placeholder="Apt, Suite (optional)"></div>
+              <div class="form-row-2">
+                <div class="form-group"><label class="form-lbl">CITY *</label>
+                  <input name="city" class="form-ctrl" required></div>
+                <div class="form-group"><label class="form-lbl">STATE / REGION</label>
+                  <input name="state" class="form-ctrl" placeholder="Optional"></div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group"><label class="form-lbl">ZIP / POSTAL CODE *</label>
+                  <input name="zipCode" class="form-ctrl" required></div>
+                <div class="form-group"><label class="form-lbl">COUNTRY *</label>
+                  <select name="country" class="form-ctrl" required>
+                    <option value="">Select...</option>
+                    <option value="United States">United States</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Australia">Australia</option>
+                    <option value="India">India</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="UAE">UAE</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div>
+            <!-- Government ID -->
+            <div class="form-section">
+              <div class="fs-title">🪪 Government-Issued ID</div>
+              <div class="fs-sub">Original document must be physically inspected at branch</div>
+
+              <!-- Hidden radio inputs, cards are the visible selectors -->
+              <div class="id-grid">
+                <label class="id-card sel" id="card-PASSPORT" onclick="selectIdType('PASSPORT')">
+                  <div style="font-size:24px;margin-bottom:5px">🛂</div>
+                  <div style="font-size:10px;font-weight:700;color:var(--gold)">Passport</div>
+                </label>
+                <label class="id-card" id="card-DRIVERS_LICENSE" onclick="selectIdType('DRIVERS_LICENSE')">
+                  <div style="font-size:24px;margin-bottom:5px">🪪</div>
+                  <div style="font-size:10px;font-weight:700">Driver's License</div>
+                </label>
+                <label class="id-card" id="card-NATIONAL_ID" onclick="selectIdType('NATIONAL_ID')">
+                  <div style="font-size:24px;margin-bottom:5px">🏛</div>
+                  <div style="font-size:10px;font-weight:700">National ID</div>
+                </label>
+              </div>
+              <!-- Single hidden input that JS populates -->
+              <input type="hidden" name="idType" id="idTypeInput" value="PASSPORT">
+
+              <div class="form-row-2">
+                <div class="form-group"><label class="form-lbl">ID NUMBER *</label>
+                  <input name="idNumber" id="idNumber" class="form-ctrl" placeholder="e.g. A12345678" required></div>
+                <div class="form-group"><label class="form-lbl">EXPIRY DATE *</label>
+                  <input name="idExpiry" id="idExpiry" type="date" class="form-ctrl" required min="2025-01-01"></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-lbl">UPLOAD ID SCAN *</label>
+                <div class="upload-area" id="upload-area">
+                  <input type="file" name="idDocument" id="idDocument" accept=".jpg,.jpeg,.png,.pdf"
+                         onchange="handleFileSelect(this)">
+                  <div id="upload-placeholder">
+                    <div style="font-size:28px;margin-bottom:6px">📁</div>
+                    <div style="font-size:12px;color:var(--muted)">Click to upload scanned ID document</div>
+                    <div style="font-size:10px;color:var(--muted);margin-top:3px">JPG, PNG or PDF · Max 10MB</div>
+                  </div>
+                  <div id="upload-done" style="display:none">
+                    <div style="font-size:28px;margin-bottom:6px">✅</div>
+                    <div id="upload-filename" style="font-size:12px;color:var(--green)">File uploaded</div>
+                  </div>
+                </div>
+                <!-- Fallback hidden name field -->
+                <input type="hidden" name="idDocumentName" id="idDocumentName" value="">
+              </div>
+            </div>
+
+            <!-- Account Details -->
+            <div class="form-section">
+              <div class="fs-title">🏦 Account to Open</div>
+              <div class="fs-sub">The first account to create for this client</div>
+              <div class="form-group"><label class="form-lbl">ACCOUNT TYPE *</label>
+                <select name="accountType" class="form-ctrl" required>
+                  <option value="">Select type...</option>
+                  <option value="CHECKING">Checking Account</option>
+                  <option value="SAVINGS">High-Yield Savings (4.85% APY)</option>
+                  <option value="BROKERAGE">Investment Brokerage</option>
+                  <option value="CREDIT_CARD">Platinum Credit Card</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-lbl">CLIENT TIER</label>
+                <select name="tier" class="form-ctrl">
+                  <option value="STANDARD" selected>STANDARD</option>
+                  <option value="PRIVATE">PRIVATE</option>
+                  <option value="PLATINUM">PLATINUM</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Compliance notice -->
+            <div style="background:rgba(230,126,34,0.08);border:1px solid rgba(230,126,34,0.25);border-left:3px solid var(--orange);padding:12px 16px;margin-bottom:14px;font-family:sans-serif;font-size:12px;color:var(--muted);line-height:1.7">
+              ⚠️ <strong style="color:var(--orange)">Compliance Notice:</strong> By submitting you confirm the client's identity has been physically verified at the branch and all AML checks completed.
+            </div>
+
+            <button type="submit" class="btn btn-gold btn-full" style="padding:15px;font-size:11px;letter-spacing:0.15em">
+              SUBMIT APPLICATION FOR REVIEW →
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// ID type selector
+function selectIdType(type) {
+  document.querySelectorAll('.id-card').forEach(c => {
+    c.classList.remove('sel');
+    c.querySelector('div:last-child').style.color = '';
+  });
+  const card = document.getElementById('card-' + type);
+  card.classList.add('sel');
+  card.querySelector('div:last-child').style.color = 'var(--gold)';
+  document.getElementById('idTypeInput').value = type;
+}
+
+// File upload handler
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const area = document.getElementById('upload-area');
+  area.classList.add('done');
+  document.getElementById('upload-placeholder').style.display = 'none';
+  document.getElementById('upload-done').style.display = 'block';
+  document.getElementById('upload-filename').textContent = file.name + ' — Ready';
+  document.getElementById('idDocumentName').value = file.name;
+}
+
+// Form validation before submit
+function validateForm() {
+  const required = ['fullName','dateOfBirth','nationality','email','phoneNumber',
+                    'addressLine1','city','zipCode','country','idNumber','idExpiry','accountType'];
+  for (const name of required) {
+    const el = document.querySelector('[name="' + name + '"]');
+    if (!el || !el.value.trim()) {
+      el && el.focus();
+      alert('Please fill in all required fields. Missing: ' + name.replace(/([A-Z])/g,' $1').toUpperCase());
+      return false;
+    }
+  }
+  if (!document.getElementById('idTypeInput').value) {
+    alert('Please select an ID type.');
+    return false;
+  }
+  return true;
+}
+
+// Prevent default link behavior on label clicks
+document.querySelectorAll('.id-card').forEach(card => {
+  card.addEventListener('click', function(e) {
+    e.preventDefault();
+  });
+});
+</script>
+</body>
+</html>

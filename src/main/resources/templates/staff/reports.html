@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Reports — Aurelius Staff</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="s-logo-circle">A</div>
+      <div>
+        <div class="s-logo-name">AURELIUS</div>
+        <div class="s-logo-sub">STAFF HUB</div>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2"
+           th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+      <div class="s-user-name" th:text="${staff.fullName}">Sarah</div>
+      <div class="s-user-tier" th:text="${staff.role.name().replace('_',' ')}">MANAGER</div>
+      <div class="s-user-id" th:text="${staff.badgeId}">ID</div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">OPERATIONS</div>
+      <a href="/staff/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="/staff/applications" class="nav-item"><span class="nav-icon">📋</span> Client Applications</a>
+      <a href="/staff/call-queue" class="nav-item"><span class="nav-icon">📞</span> Call Queue</a>
+      <a href="/staff/tickets" class="nav-item"><span class="nav-icon">🎫</span> Support Tickets</a>
+
+      <div class="nav-section-lbl">CUSTOMERS</div>
+      <a href="/staff/customers" class="nav-item"><span class="nav-icon">👥</span> Active Clients</a>
+
+      <div class="nav-section-lbl">CONTROLS</div>
+      <a href="/staff/approvals" class="nav-item"><span class="nav-icon">✅</span> Approvals</a>
+      <a href="/staff/alerts" class="nav-item"><span class="nav-icon">🔔</span> Send Alerts</a>
+
+      <div class="nav-section-lbl">REPORTING</div>
+      <a href="/staff/reports" class="nav-item active"><span class="nav-icon">📊</span> Reports</a>
+      <a href="/staff/audit-log" class="nav-item"><span class="nav-icon">📋</span> Audit Log</a>
+    </div>
+
+    <div class="sidebar-bottom">
+      <a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Reports &amp; Analytics</div>
+      <div class="topbar-right">
+        <div class="topbar-user">
+          <div class="topbar-av" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+          <span th:text="${staff.fullName}">Sarah</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="page-heading">📊 Reports &amp; Analytics</div>
+      <p class="page-sub"
+         th:text="${'Branch performance · ' + #temporals.format(#temporals.createNow(),'MMMM dd, yyyy')}">
+        Overview
+      </p>
+
+      <!-- Top stats row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">ACTIVE CLIENTS <span class="stat-icon">👥</span></div>
+          <div class="stat-value" th:text="${totalClients}">0</div>
+          <div class="stat-change ne" th:text="${totalAccounts + ' total accounts'}">Accounts</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">TRANSACTIONS <span class="stat-icon">↕</span></div>
+          <div class="stat-value" th:text="${totalTransactions}">0</div>
+          <div class="stat-change ne">All time</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">OPEN TICKETS <span class="stat-icon">🎫</span></div>
+          <div class="stat-value"
+               th:classappend="${openTickets > 0 ? ' text-orange' : ''}"
+               th:text="${openTickets}">
+            0
+          </div>
+          <div class="stat-change"
+               th:classappend="${openTickets > 0 ? ' dn' : ' ne'}"
+               th:text="${escalatedTickets + ' escalated · ' + resolvedTickets + ' resolved'}">
+            Tickets
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">APPLICATIONS <span class="stat-icon">📋</span></div>
+          <div class="stat-value" th:text="${totalApplications}">0</div>
+          <div class="stat-change ne" th:text="${pendingApplications + ' pending · ' + accessGranted + ' live'}">
+            Status
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Ticket breakdown -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title">🎫 Ticket Status Breakdown</div>
+            <a href="/staff/tickets" class="panel-action">VIEW ALL →</a>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span>Open</span>
+                <span class="text-orange" th:text="${openTickets}">0</span>
+              </div>
+              <div class="risk-bar">
+                <div class="risk-fill"
+                     style="background:var(--orange)"
+                     th:style="${'background:var(--orange);height:100%;width:' +
+                        (openTickets + resolvedTickets + escalatedTickets > 0
+                          ? #numbers.formatDecimal(openTickets * 100.0 / (openTickets + resolvedTickets + escalatedTickets), 1, 'COMMA', 0, 'POINT')
+                          : '0') + '%'}">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span>Escalated</span>
+                <span class="text-red" th:text="${escalatedTickets}">0</span>
+              </div>
+              <div class="risk-bar">
+                <div class="risk-fill risk-high"
+                     th:style="${'height:100%;width:' +
+                        (openTickets + resolvedTickets + escalatedTickets > 0
+                          ? #numbers.formatDecimal(escalatedTickets * 100.0 / (openTickets + resolvedTickets + escalatedTickets), 1, 'COMMA', 0, 'POINT')
+                          : '0') + '%'}">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span>Resolved</span>
+                <span class="text-green" th:text="${resolvedTickets}">0</span>
+              </div>
+              <div class="risk-bar">
+                <div class="risk-fill risk-low"
+                     th:style="${'height:100%;width:' +
+                        (openTickets + resolvedTickets + escalatedTickets > 0
+                          ? #numbers.formatDecimal(resolvedTickets * 100.0 / (openTickets + resolvedTickets + escalatedTickets), 1, 'COMMA', 0, 'POINT')
+                          : '0') + '%'}">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Application pipeline -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title">📋 Application Pipeline</div>
+            <a href="/staff/applications" class="panel-action">VIEW ALL →</a>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(230,126,34,0.06);border:1px solid rgba(230,126,34,0.2)">
+              <span style="font-size:12px">Pending Review</span>
+              <span class="badge badge-orange" th:text="${pendingApplications}">0</span>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(41,128,185,0.06);border:1px solid rgba(41,128,185,0.2)">
+              <span style="font-size:12px">Approved (awaiting access)</span>
+              <span class="badge badge-blue"
+                    th:text="${totalApplications - pendingApplications - accessGranted > 0 ? totalApplications - pendingApplications - accessGranted : 0}">
+                0
+              </span>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(39,174,96,0.06);border:1px solid rgba(39,174,96,0.2)">
+              <span style="font-size:12px">Access Granted (live clients)</span>
+              <span class="badge badge-green" th:text="${accessGranted}">0</span>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border2)">
+              <span style="font-size:12px;color:var(--muted)">Total Applications</span>
+              <span style="font-family:Georgia;font-size:14px" th:text="${totalApplications}">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent transactions table -->
+      <div class="panel panel-no-pad">
+        <div class="panel-hdr" style="padding:14px 20px;border-bottom:1px solid var(--border)">
+          <div class="panel-title">Recent Transactions (All Clients)</div>
+          <span class="text-muted text-sm" th:text="${'Last ' + recentTransactions.size() + ' transactions'}"></span>
+        </div>
+
+        <div th:if="${recentTransactions.empty}"
+             style="padding:30px;text-align:center;color:var(--muted);font-family:sans-serif;font-size:13px">
+          No transactions yet.
+        </div>
+
+        <table class="data-table" th:unless="${recentTransactions.empty}">
+          <thead>
+          <tr>
+            <th>DATE</th>
+            <th>CLIENT</th>
+            <th>DESCRIPTION</th>
+            <th>CATEGORY</th>
+            <th>AMOUNT</th>
+            <th>STATUS</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="tx : ${recentTransactions}">
+            <td class="text-muted text-xs mono" th:text="${#temporals.format(tx.createdAt,'MMM dd HH:mm')}">Date</td>
+            <td style="font-size:12px" th:text="${tx.account != null && tx.account.owner != null ? tx.account.owner.fullName : '—'}">Client</td>
+            <td style="font-size:12px" th:text="${#strings.abbreviate(tx.description,40)}">Desc</td>
+            <td>
+              <span class="badge badge-grey text-xs" th:text="${tx.category}">Cat</span>
+            </td>
+            <td style="font-family:Georgia;font-size:13px"
+                th:classappend="${tx.type != null && tx.type.name() == 'CREDIT' ? ' text-green' : ' text-red'}"
+                th:text="${(tx.type != null && tx.type.name() == 'CREDIT' ? '+$' : '-$') + #numbers.formatDecimal(tx.amount.abs(),1,'COMMA',2,'POINT')}">
+              $0
+            </td>
+            <td>
+              <span th:class="'badge ' + (tx.status != null && tx.status.name() == 'COMPLETED' ? 'badge-green' : (tx.status != null && tx.status.name() == 'PENDING' ? 'badge-orange' : 'badge-grey'))"
+                    th:text="${tx.status != null ? tx.status : 'UNKNOWN'}">
+                STATUS
+              </span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

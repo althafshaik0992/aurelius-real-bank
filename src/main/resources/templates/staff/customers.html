@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Customers — Aurelius Staff</title><link rel="stylesheet" th:href="@{/css/main.css}"></head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">STAFF HUB</div></div></div>
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+      <div class="s-user-name" th:text="${staff.fullName}">Sarah</div>
+      <div class="s-user-tier" th:text="${staff.role.name().replace('_',' ')}">MANAGER</div>
+      <div class="s-user-id" th:text="${staff.badgeId}">ID</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">OPERATIONS</div>
+      <a href="/staff/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="/staff/applications" class="nav-item"><span class="nav-icon">📋</span> Client Applications</a>
+      <a href="/staff/call-queue" class="nav-item"><span class="nav-icon">📞</span> Call Queue</a>
+      <a href="/staff/tickets" class="nav-item"><span class="nav-icon">🎫</span> Support Tickets</a>
+      <div class="nav-section-lbl">CUSTOMERS</div>
+      <a href="/staff/customers" class="nav-item active"><span class="nav-icon">👥</span> Customer Search</a>
+      <div class="nav-section-lbl">CONTROLS</div>
+      <a href="/staff/approvals" class="nav-item"><span class="nav-icon">✅</span> Approvals</a>
+      <a href="/staff/alerts" class="nav-item"><span class="nav-icon">🔔</span> Send Alerts</a>
+      <div class="nav-section-lbl">REPORTING</div>
+      <a href="/staff/reports" class="nav-item"><span class="nav-icon">📊</span> Reports</a>
+      <a href="/staff/audit-log" class="nav-item"><span class="nav-icon">📋</span> Audit Log</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Customers</div>
+      <div class="topbar-right">
+        <div class="topbar-user">
+          <div class="topbar-av" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+          <span th:text="${staff.fullName}">Sarah</span>
+        </div>
+      </div>
+    </div>
+    <div class="page-content">
+      <form method="get" action="/staff/customers">
+        <div class="search-bar">
+          <input name="search" type="text" class="form-ctrl search-input" placeholder="🔍  Search by name or email..." th:value="${search}">
+          <button type="submit" class="btn btn-outline btn-sm">SEARCH</button>
+        </div>
+      </form>
+      <div class="panel panel-no-pad">
+        <table class="data-table">
+          <thead><tr><th>CUSTOMER</th><th>EMAIL</th><th>TIER</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+          <tbody>
+            <tr th:each="c : ${clients}">
+              <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="avatar" style="width:32px;height:32px;background:rgba(41,128,185,0.2);color:#5dade2;font-size:11px" th:text="${#strings.substring(c.fullName,0,2).toUpperCase()}">JW</div>
+                  <div style="font-weight:600" th:text="${c.fullName}">Name</div>
+                </div>
+              </td>
+              <td class="text-muted text-sm" th:text="${c.email}">email</td>
+              <td><span th:class="'badge ' + (${c.clientTier == 'PLATINUM'} ? 'badge-gold' : (${c.clientTier == 'PRIVATE'} ? 'badge-blue' : 'badge-grey'))" th:text="${c.clientTier}">TIER</span></td>
+              <td><span th:class="'badge ' + (${c.active} ? 'badge-green' : 'badge-red')" th:text="${c.active} ? 'ACTIVE' : 'INACTIVE'">ACTIVE</span></td>
+              <td><a th:href="@{'/staff/customer360/' + ${c.id}}" class="btn btn-outline btn-sm">360 VIEW</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div></div></div></body></html>
+    </div>
+  </div>
+</div>
+</body>
+</html>

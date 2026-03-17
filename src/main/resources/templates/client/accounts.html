@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Accounts — Aurelius</title><link rel="stylesheet" th:href="@{/css/main.css}"></head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">PRIVATE BANK</div></div></div>
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div>
+      <div class="s-user-name" th:text="${user.fullName}">James</div>
+      <div class="s-user-tier" th:text="${user.clientTier} + ' CLIENT'">PLATINUM</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">MAIN</div>
+      <a href="/client/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Overview</a>
+      <a href="/client/accounts" class="nav-item active"><span class="nav-icon">🏦</span> Accounts</a>
+      <a href="/client/transactions" class="nav-item"><span class="nav-icon">↕</span> Transactions</a>
+      <a href="/client/transfer" class="nav-item"><span class="nav-icon">➤</span> Transfer Funds</a>
+      <div class="nav-section-lbl">WEALTH</div>
+      <a href="/client/investments" class="nav-item"><span class="nav-icon">📈</span> Investments</a>
+      <a href="/client/cards" class="nav-item"><span class="nav-icon">💳</span> Cards</a>
+      <div class="nav-section-lbl">ACCOUNT</div>
+      <a href="/client/notifications" class="nav-item"><span class="nav-icon">🔔</span> Notifications<span th:if="${unreadCount > 0}" class="nav-badge" th:text="${unreadCount}">0</span></a>
+      <a href="/client/settings" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">My Accounts</div>
+      <div class="topbar-right"><div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><span th:text="${user.fullName}">James</span></div></div>
+    </div>
+    <div class="page-content">
+      <div class="page-heading">My Accounts</div>
+      <p class="page-sub" th:text="${accounts.size()} + ' account(s) · To open a new account, please contact your branch'">Accounts</p>
+
+      <!-- No accounts -->
+      <div th:if="${accounts.empty}" style="text-align:center;padding:60px;background:rgba(255,255,255,0.02);border:1px solid var(--border)">
+        <div style="font-size:48px;margin-bottom:14px">🏦</div>
+        <div style="font-size:18px;font-family:Georgia;margin-bottom:8px">No accounts yet</div>
+        <div style="font-family:sans-serif;font-size:13px;color:var(--muted);line-height:1.7">
+          Your accounts are set up by your Aurelius branch. Please visit or contact your branch representative to open a new account.
+        </div>
+      </div>
+
+      <!-- Account cards grid -->
+      <div class="grid-2" th:unless="${accounts.empty}">
+        <div th:each="acc : ${accounts}" class="panel">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+            <div class="avatar"
+                 th:style="'width:48px;height:48px;font-size:20px;background:' +
+                   (${acc.type.name()=='CHECKING'} ? 'rgba(41,128,185,0.15)' :
+                   (${acc.type.name()=='SAVINGS'} ? 'rgba(39,174,96,0.15)' :
+                   (${acc.type.name()=='BROKERAGE'} ? 'rgba(201,168,76,0.15)' : 'rgba(142,68,173,0.15)')))"
+                 th:text="${acc.type.name()=='CHECKING'} ? '🏦' : (${acc.type.name()=='SAVINGS'} ? '💵' : (${acc.type.name()=='BROKERAGE'} ? '📊' : '💳'))">🏦</div>
+            <div style="flex:1">
+              <div style="font-size:16px;margin-bottom:3px" th:text="${acc.type.name().replace('_',' ')}">Type</div>
+              <div class="text-xs text-muted mono" th:text="'ACCOUNT •••• ' + ${acc.accountNumber}">•••• 0000</div>
+            </div>
+            <span th:if="${acc.status == 'FROZEN'}" class="badge badge-red">🔒 FROZEN</span>
+          </div>
+          <div style="font-size:32px;font-family:Georgia;margin-bottom:6px"
+               th:class="${acc.balance.signum() < 0} ? 'text-red' : ''"
+               th:text="'$' + ${#numbers.formatDecimal(acc.balance,1,'COMMA',2,'POINT')}">$0</div>
+          <div style="font-family:sans-serif;font-size:12px;color:var(--muted);margin-bottom:16px">
+            <span th:if="${acc.type.name()=='SAVINGS'}">4.85% APY · Interest earning daily</span>
+            <span th:if="${acc.type.name()=='CHECKING'}">No monthly fees · Unlimited transactions</span>
+            <span th:if="${acc.type.name()=='BROKERAGE'}">Investment account · Stocks &amp; ETFs</span>
+            <span th:if="${acc.type.name()=='CREDIT_CARD'}">Platinum rewards card · No foreign fees</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <a href="/client/transfer" class="btn btn-outline btn-sm">TRANSFER</a>
+            <a th:href="@{/client/transactions(account=${acc.accountNumber})}" class="btn btn-sm" style="background:rgba(255,255,255,0.05);border:1px solid var(--border2);color:var(--muted)">STATEMENTS</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info note -->
+      <div style="margin-top:20px;padding:14px 18px;background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.15);font-family:sans-serif;font-size:12px;color:var(--muted);line-height:1.7">
+        💡 To open an additional account or request changes, please contact your branch or call Aurelius Private Banking at 1-800-AURELIUS.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

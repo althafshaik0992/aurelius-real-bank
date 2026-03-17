@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Approvals — Aurelius Staff</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="s-logo-circle">A</div>
+      <div>
+        <div class="s-logo-name">AURELIUS</div>
+        <div class="s-logo-sub">STAFF HUB</div>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2"
+           th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+      <div class="s-user-name" th:text="${staff.fullName}">Sarah</div>
+      <div class="s-user-tier" th:text="${staff.role.name().replace('_',' ')}">MANAGER</div>
+      <div class="s-user-id" th:text="${staff.badgeId}">ID</div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">OPERATIONS</div>
+      <a href="/staff/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="/staff/applications" class="nav-item"><span class="nav-icon">📋</span> Client Applications</a>
+      <a href="/staff/call-queue" class="nav-item"><span class="nav-icon">📞</span> Call Queue</a>
+      <a href="/staff/tickets" class="nav-item"><span class="nav-icon">🎫</span> Support Tickets</a>
+
+      <div class="nav-section-lbl">CUSTOMERS</div>
+      <a href="/staff/customers" class="nav-item"><span class="nav-icon">👥</span> Active Clients</a>
+
+      <div class="nav-section-lbl">CONTROLS</div>
+      <a href="/staff/approvals" class="nav-item active"><span class="nav-icon">✅</span> Approvals</a>
+      <a href="/staff/alerts" class="nav-item"><span class="nav-icon">🔔</span> Send Alerts</a>
+
+      <div class="nav-section-lbl">REPORTING</div>
+      <a href="/staff/reports" class="nav-item"><span class="nav-icon">📊</span> Reports</a>
+      <a href="/staff/audit-log" class="nav-item"><span class="nav-icon">📋</span> Audit Log</a>
+    </div>
+
+    <div class="sidebar-bottom">
+      <a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Approvals</div>
+      <div class="topbar-right">
+        <div class="topbar-user">
+          <div class="topbar-av" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+          <span th:text="${staff.fullName}">Sarah</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+      <div class="panel panel-no-pad" style="margin-bottom:20px">
+        <div class="panel-hdr" style="padding:16px 20px">
+          <div class="panel-title">Pending Approvals</div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>CUSTOMER</th>
+            <th>ACTION</th>
+            <th>AMOUNT</th>
+            <th>RISK</th>
+            <th>DATE</th>
+            <th>APPROVE / REJECT</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="apr : ${pendingApprovals}">
+            <td th:text="${apr.customer != null ? apr.customer.fullName : '—'}">Name</td>
+            <td th:text="${apr.title}">Title</td>
+            <td style="font-family:Georgia"
+                th:text="'$' + ${#numbers.formatDecimal(apr.amount,1,'COMMA',0,'POINT')}">$0</td>
+            <td>
+              <span th:class="'badge ' + (${apr.riskFlag == 'SUSPICIOUS'} ? 'badge-red' : (${apr.riskFlag == 'LARGE_TXN'} ? 'badge-orange' : 'badge-grey'))"
+                    th:text="${apr.riskFlag != null ? apr.riskFlag : 'NONE'}">
+                NONE
+              </span>
+            </td>
+            <td class="text-muted text-sm" th:text="${#temporals.format(apr.createdAt,'MMM dd HH:mm')}">Date</td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <form method="post" th:action="@{'/staff/approvals/' + ${apr.id} + '/action'}" style="display:inline">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input type="hidden" name="action" value="APPROVE">
+                  <button type="submit" class="btn btn-green btn-sm">✓ APPROVE</button>
+                </form>
+
+                <form method="post" th:action="@{'/staff/approvals/' + ${apr.id} + '/action'}" style="display:inline">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input type="hidden" name="action" value="REJECT">
+                  <button type="submit" class="btn btn-red btn-sm">✗ REJECT</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+
+          <tr th:if="${pendingApprovals.empty}">
+            <td colspan="6" style="text-align:center;color:var(--muted);padding:30px">
+              No pending approvals.
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel panel-no-pad">
+        <div class="panel-hdr" style="padding:16px 20px">
+          <div class="panel-title">Approval History</div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>CUSTOMER</th>
+            <th>ACTION</th>
+            <th>AMOUNT</th>
+            <th>TYPE</th>
+            <th>STATUS</th>
+            <th>DATE</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="apr : ${approvalLog}">
+            <td th:text="${apr.customer != null ? apr.customer.fullName : '—'}">Name</td>
+            <td th:text="${apr.title}">Title</td>
+            <td style="font-family:Georgia"
+                th:text="'$' + ${#numbers.formatDecimal(apr.amount,1,'COMMA',0,'POINT')}">$0</td>
+            <td>
+              <span class="badge badge-blue"
+                    th:text="${apr.type != null ? apr.type.name().replace('_',' ') : '—'}">TYPE</span>
+            </td>
+            <td>
+              <span th:class="'badge ' + (${apr.status.name() == 'PENDING'} ? 'badge-orange' : (${apr.status.name() == 'APPROVED'} ? 'badge-green' : 'badge-red'))"
+                    th:text="${apr.status}">
+                STATUS
+              </span>
+            </td>
+            <td class="text-muted text-sm" th:text="${#temporals.format(apr.createdAt,'MMM dd HH:mm')}">Date</td>
+          </tr>
+
+          <tr th:if="${approvalLog.empty}">
+            <td colspan="6" style="text-align:center;color:var(--muted);padding:30px">
+              No approval history found.
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

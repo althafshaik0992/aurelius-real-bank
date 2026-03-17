@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Application Detail — Aurelius Staff</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="s-logo-circle">A</div>
+      <div>
+        <div class="s-logo-name">AURELIUS</div>
+        <div class="s-logo-sub">STAFF HUB</div>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="s-user-av"
+           style="background:rgba(41,128,185,0.2);color:#5dade2"
+           th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+      <div class="s-user-name" th:text="${staff.fullName}">Sarah</div>
+      <div class="s-user-tier" th:text="${staff.role.name().replace('_',' ')}">MANAGER</div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">OPERATIONS</div>
+      <a href="/staff/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="/staff/applications" class="nav-item active"><span class="nav-icon">📋</span> Client Applications</a>
+      <a href="/staff/call-queue" class="nav-item"><span class="nav-icon">📞</span> Call Queue</a>
+      <a href="/staff/tickets" class="nav-item"><span class="nav-icon">🎫</span> Support Tickets</a>
+
+      <div class="nav-section-lbl">CUSTOMERS</div>
+      <a href="/staff/customers" class="nav-item"><span class="nav-icon">👥</span> Active Clients</a>
+
+      <div class="nav-section-lbl">CONTROLS</div>
+      <a href="/staff/approvals" class="nav-item"><span class="nav-icon">✅</span> Approvals</a>
+      <a href="/staff/alerts" class="nav-item"><span class="nav-icon">🔔</span> Send Alerts</a>
+
+      <div class="nav-section-lbl">REPORTING</div>
+      <a href="/staff/reports" class="nav-item"><span class="nav-icon">📊</span> Reports</a>
+      <a href="/staff/audit-log" class="nav-item"><span class="nav-icon">📋</span> Audit Log</a>
+    </div>
+
+    <div class="sidebar-bottom">
+      <a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title"
+           th:text="'Application — ' + (clientApplication.fullName != null ? clientApplication.fullName : 'New Application')">
+        Application
+      </div>
+
+      <div class="topbar-right">
+        <a href="/staff/applications" class="btn btn-outline btn-sm"
+           onclick="window.location.replace('/staff/applications');return false;">← BACK</a>
+        <div class="topbar-user">
+          <div class="topbar-av" th:text="${#strings.substring(staff.fullName,0,2).toUpperCase()}">SC</div>
+          <span th:text="${staff.fullName}">Sarah</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:16px 20px;background:rgba(255,255,255,0.03);border:1px solid var(--border)">
+        <div style="flex:1">
+          <div style="font-size:18px;font-family:Georgia;margin-bottom:4px"
+               th:text="${clientApplication.fullName != null and !#strings.isEmpty(clientApplication.fullName)} ? ${clientApplication.fullName} : 'Incomplete Application'">
+            Name
+          </div>
+          <div style="font-family:sans-serif;font-size:12px;color:var(--muted)">
+            Submitted by
+            <span th:text="${clientApplication.createdByStaff != null ? clientApplication.createdByStaff.fullName : 'Staff'}">Staff</span>
+            &nbsp;·&nbsp;
+            <span th:text="${clientApplication.createdAt != null ? #temporals.format(clientApplication.createdAt,'MMM dd, yyyy HH:mm') : '—'}">Date</span>
+          </div>
+        </div>
+
+        <span class="badge"
+              th:classappend="${clientApplication.status != null and clientApplication.status.name() == 'PENDING_REVIEW'} ? ' badge-orange' : ''"
+              style="font-size:11px;padding:6px 16px"
+              th:text="${clientApplication.status != null ? clientApplication.status.name().replace('_',' ') : 'UNKNOWN'}">
+          STATUS
+        </span>
+
+        <span th:if="${false}"></span>
+      </div>
+
+      <script th:inline="none"></script>
+
+      <div th:if="${clientApplication.status != null and clientApplication.status.name() == 'ACCESS_GRANTED'}"
+           style="background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.3);border-left:4px solid var(--green);padding:16px 20px;margin-bottom:18px">
+        <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:6px">✅ Online Access Granted</div>
+        <div style="font-family:sans-serif;font-size:13px;color:var(--muted);line-height:1.7">
+          Client can sign in at <strong style="color:#fff">/login</strong> using
+          <strong style="color:#fff" th:text="${clientApplication.email}">email</strong>.
+          For first-time login, direct them to <strong style="color:#fff">/setup-account</strong> to set their password.
+          <span th:if="${clientApplication.onlineAccessGrantedAt != null}">
+            &nbsp;·&nbsp; Access granted:
+            <span th:text="${#temporals.format(clientApplication.onlineAccessGrantedAt,'MMM dd, yyyy HH:mm')}">date</span>
+          </span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+        <div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="panel-hdr"><div class="panel-title">👤 Personal Information</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div>
+                <div class="text-xs text-muted" style="margin-bottom:3px">FULL NAME</div>
+                <div class="text-sm" th:text="${clientApplication.fullName != null ? clientApplication.fullName : '—'}">—</div>
+              </div>
+              <div>
+                <div class="text-xs text-muted" style="margin-bottom:3px">DATE OF BIRTH</div>
+                <div class="text-sm" th:text="${clientApplication.dateOfBirth != null ? clientApplication.dateOfBirth : '—'}">—</div>
+              </div>
+              <div>
+                <div class="text-xs text-muted" style="margin-bottom:3px">NATIONALITY</div>
+                <div class="text-sm" th:text="${clientApplication.nationality != null ? clientApplication.nationality : '—'}">—</div>
+              </div>
+              <div>
+                <div class="text-xs text-muted" style="margin-bottom:3px">PHONE</div>
+                <div class="text-sm" th:text="${clientApplication.phoneNumber != null ? clientApplication.phoneNumber : '—'}">—</div>
+              </div>
+              <div style="grid-column:1/-1">
+                <div class="text-xs text-muted" style="margin-bottom:3px">EMAIL (LOGIN)</div>
+                <div class="text-sm" style="color:var(--gold)" th:text="${clientApplication.email != null ? clientApplication.email : '—'}">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-bottom:14px">
+            <div class="panel-hdr"><div class="panel-title">🏠 Address</div></div>
+            <div th:if="${clientApplication.addressLine1 != null}">
+              <div class="text-sm" th:text="${clientApplication.addressLine1}">—</div>
+              <div class="text-sm text-muted"
+                   th:if="${clientApplication.addressLine2 != null and !#strings.isEmpty(clientApplication.addressLine2)}"
+                   th:text="${clientApplication.addressLine2}"></div>
+              <div class="text-sm" style="margin-top:3px"
+                   th:text="${(clientApplication.city != null ? clientApplication.city : '') +
+                              ((clientApplication.state != null and !#strings.isEmpty(clientApplication.state)) ? ', ' + clientApplication.state : '') +
+                              (clientApplication.zipCode != null ? ' ' + clientApplication.zipCode : '')}">
+                —
+              </div>
+              <div class="text-sm text-muted" style="margin-top:2px"
+                   th:text="${clientApplication.country != null ? clientApplication.country : '—'}">—</div>
+            </div>
+            <div th:unless="${clientApplication.addressLine1 != null}" class="text-sm text-muted">No address on record</div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-hdr"><div class="panel-title">🪪 Government ID</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+              <div>
+                <div class="text-xs text-muted" style="margin-bottom:3px">ID TYPE</div>
+                <span th:if="${clientApplication.idType != null}" class="badge badge-blue"
+                      th:text="${clientApplication.idType.replace('_',' ')}">ID</span>
+                <span th:unless="${clientApplication.idType != null}" class="text-sm text-muted">—</span>
+              </div>
+              <div>
+                <div class="text-xs text-muted" style="margin-bottom:3px">ID NUMBER</div>
+                <div class="text-sm mono" th:text="${clientApplication.idNumber != null ? clientApplication.idNumber : '—'}">—</div>
+              </div>
+              <div>
+                <div class="text-xs text-muted" style="margin-bottom:3px">EXPIRY DATE</div>
+                <div class="text-sm" th:text="${clientApplication.idExpiry != null ? clientApplication.idExpiry : '—'}">—</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border2);padding:16px;text-align:center">
+              <div th:if="${clientApplication.idDocumentName != null}">
+                <div style="font-size:28px;margin-bottom:6px">🪪</div>
+                <div class="text-sm" th:text="${clientApplication.idDocumentName}">doc</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:3px" th:text="${clientApplication.idDocumentPath}">path</div>
+                <span class="badge badge-green" style="margin-top:8px;display:inline-block">DOCUMENT ON FILE</span>
+              </div>
+              <div th:unless="${clientApplication.idDocumentName != null}">
+                <div style="font-size:28px;margin-bottom:6px;opacity:0.4">📄</div>
+                <div class="text-sm text-muted">No document uploaded</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="panel-hdr"><div class="panel-title">🏦 Account to Open</div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <span class="text-muted text-sm">Account Type</span>
+              <span class="text-sm"
+                    th:text="${clientApplication.accountType != null ? clientApplication.accountType.replace('_',' ') : '—'}">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="text-muted text-sm">Client Tier</span>
+              <span class="badge"
+                    th:classappend="${clientApplication.initialTier == 'PLATINUM'} ? ' badge-gold' : (${clientApplication.initialTier == 'PRIVATE'} ? ' badge-blue' : ' badge-grey')"
+                    th:text="${clientApplication.initialTier != null ? clientApplication.initialTier : 'STANDARD'}">STANDARD</span>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-bottom:14px"
+               th:if="${clientApplication.reviewNotes != null or clientApplication.rejectionReason != null or clientApplication.reviewedBy != null}">
+            <div class="panel-hdr"><div class="panel-title">📝 Review Notes</div></div>
+
+            <div th:if="${clientApplication.reviewNotes != null and !#strings.isEmpty(clientApplication.reviewNotes)}"
+                 class="text-sm" style="margin-bottom:8px" th:text="${clientApplication.reviewNotes}">Notes</div>
+
+            <div th:if="${clientApplication.rejectionReason != null}"
+                 style="color:var(--red);font-family:sans-serif;font-size:12px;margin-bottom:8px"
+                 th:text="${'Rejection reason: ' + clientApplication.rejectionReason}">
+              Reason
+            </div>
+
+            <div th:if="${clientApplication.reviewedBy != null}" class="text-xs text-muted"
+                 th:text="${'Reviewed by ' + clientApplication.reviewedBy.fullName + (clientApplication.reviewedAt != null ? ' · ' + #temporals.format(clientApplication.reviewedAt,'MMM dd HH:mm') : '')}">
+              Reviewer
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-hdr"><div class="panel-title">⚖️ Actions</div></div>
+
+            <div th:if="${clientApplication.fullName == null or #strings.isEmpty(clientApplication.fullName)}">
+              <div style="background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);padding:14px;font-family:sans-serif;font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px">
+                ⚠️ This application is incomplete — it was created without required fields and cannot be used.
+              </div>
+
+              <form th:if="${clientApplication.id != null}"
+                    method="post"
+                    th:action="@{'/staff/applications/' + ${clientApplication.id} + '/delete'}"
+                    onsubmit="return confirm('Delete this incomplete application permanently?')"
+                    style="margin-bottom:10px">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-full"
+                        style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);color:var(--red);padding:12px;font-size:11px;letter-spacing:0.1em">
+                  🗑 DELETE THIS APPLICATION
+                </button>
+              </form>
+
+              <div th:if="${clientApplication.id == null}"
+                   style="background:rgba(255,255,255,0.04);border:1px solid var(--border2);padding:12px 14px;font-family:sans-serif;font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:10px">
+                This record has no database ID. Go to the Applications list and use the
+                <strong style="color:var(--red)">🧹 CLEAN UP</strong> button to remove all incomplete applications at once.
+              </div>
+
+              <a href="/staff/applications" class="btn btn-outline btn-full"
+                 style="display:block;text-align:center;padding:11px;margin-bottom:8px"
+                 onclick="window.location.replace('/staff/applications');return false;">← BACK TO APPLICATIONS LIST</a>
+
+              <a href="/staff/applications/new" class="btn btn-gold btn-full"
+                 style="display:block;text-align:center;padding:12px">+ NEW APPLICATION</a>
+            </div>
+
+            <div th:if="${clientApplication.fullName != null and !#strings.isEmpty(clientApplication.fullName) and clientApplication.status != null and (clientApplication.status.name() == 'PENDING_REVIEW' or clientApplication.status.name() == 'UNDER_REVIEW')}">
+              <div style="font-family:sans-serif;font-size:12px;color:var(--muted);margin-bottom:14px;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border2);line-height:1.7">
+                ① Review the KYC documents on the left, then approve or reject this application.
+              </div>
+
+              <form method="post" th:action="@{'/staff/applications/' + ${clientApplication.id} + '/approve'}" style="margin-bottom:10px">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="form-group">
+                  <label class="form-lbl">APPROVAL NOTES (optional)</label>
+                  <input name="notes" class="form-ctrl" placeholder="e.g. Passport verified in person, all details confirmed">
+                </div>
+                <button type="submit" class="btn btn-full"
+                        style="background:var(--green);border:none;padding:13px;color:#fff;font-size:11px;letter-spacing:0.12em;font-weight:700">
+                  ✅ APPROVE APPLICATION
+                </button>
+              </form>
+
+              <hr style="border:none;border-top:1px solid var(--border2);margin:12px 0">
+
+              <form method="post" th:action="@{'/staff/applications/' + ${clientApplication.id} + '/reject'}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="form-group">
+                  <label class="form-lbl">REJECTION REASON *</label>
+                  <select name="reason" class="form-ctrl" required>
+                    <option value="">Select reason...</option>
+                    <option>Expired ID document</option>
+                    <option>ID could not be verified</option>
+                    <option>AML check failed</option>
+                    <option>Incomplete documentation</option>
+                    <option>Client no longer interested</option>
+                    <option>Duplicate application</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-full"
+                        style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:var(--red);padding:12px;font-size:11px;letter-spacing:0.1em;font-weight:700">
+                  ❌ REJECT APPLICATION
+                </button>
+              </form>
+            </div>
+
+            <div th:if="${clientApplication.status != null and clientApplication.status.name() == 'APPROVED'}">
+              <div style="background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.2);padding:14px;margin-bottom:16px;font-family:sans-serif;font-size:12px;color:var(--muted);line-height:1.7">
+                ✅ KYC approved by compliance.<br>
+                ② Click below to create the client's bank account and activate their online portal access.
+              </div>
+
+              <form method="post" th:action="@{'/staff/applications/' + ${clientApplication.id} + '/grant-access'}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-gold btn-full" style="padding:14px;font-size:11px;letter-spacing:0.13em">
+                  🔓 GRANT ONLINE ACCESS &amp; CREATE ACCOUNT
+                </button>
+              </form>
+
+              <div style="margin-top:10px;font-family:sans-serif;font-size:11px;color:var(--muted);text-align:center;line-height:1.7">
+                Creates login account · Opens
+                <span th:text="${clientApplication.accountType != null ? clientApplication.accountType.replace('_',' ') : 'account'}">account</span>
+                · Client uses <strong style="color:#fff">/setup-account</strong> to set password
+              </div>
+            </div>
+
+            <div th:if="${clientApplication.status != null and clientApplication.status.name() == 'ACCESS_GRANTED'}">
+              <div style="font-family:sans-serif;font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:14px">
+                ✅ All steps complete.<br>
+                <strong style="color:#fff">Client email:</strong>
+                <span th:text="${clientApplication.email}">email</span><br>
+                <strong style="color:#fff">First login:</strong> /setup-account
+              </div>
+
+              <div th:if="${clientApplication.clientUser != null}">
+                <a th:href="@{'/staff/customer360/' + ${clientApplication.clientUser.id}}"
+                   class="btn btn-outline btn-full"
+                   style="display:block;text-align:center;padding:12px">
+                  👤 VIEW CLIENT 360° →
+                </a>
+              </div>
+            </div>
+
+            <div th:if="${clientApplication.status != null and clientApplication.status.name() == 'REJECTED'}">
+              <div style="background:rgba(231,76,60,0.06);border:1px solid rgba(231,76,60,0.2);padding:14px;font-family:sans-serif;font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px">
+                ❌ Application rejected.<br>
+                <span th:if="${clientApplication.rejectionReason != null}">
+                  Reason:
+                  <strong style="color:var(--red)" th:text="${clientApplication.rejectionReason}">Reason</strong>
+                </span>
+              </div>
+
+              <form th:if="${clientApplication.id != null}"
+                    method="post"
+                    th:action="@{'/staff/applications/' + ${clientApplication.id} + '/delete'}"
+                    onsubmit="return confirm('Permanently delete this rejected application?')">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-full"
+                        style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);color:var(--red);padding:11px;font-size:11px;letter-spacing:0.1em">
+                  🗑 DELETE APPLICATION
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  (function () {
+    const status = /*[[${clientApplication.status != null ? clientApplication.status.name() : ''}]]*/ '';
+    const badges = document.querySelectorAll('.badge');
+    if (badges.length > 0) {
+      const statusBadge = badges[0];
+      if (status === 'PENDING_REVIEW') statusBadge.classList.add('badge-orange');
+      else if (status === 'UNDER_REVIEW') statusBadge.classList.add('badge-blue');
+      else if (status === 'APPROVED' || status === 'ACCESS_GRANTED') statusBadge.classList.add('badge-green');
+      else statusBadge.classList.add('badge-red');
+    }
+  })();
+</script>
+
+</body>
+</html>

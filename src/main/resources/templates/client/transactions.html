@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Transactions — Aurelius</title><link rel="stylesheet" th:href="@{/css/main.css}"></head>
+<body>
+<div class="portal-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><div class="s-logo-circle">A</div><div><div class="s-logo-name">AURELIUS</div><div class="s-logo-sub">PRIVATE BANK</div></div></div>
+    <div class="sidebar-user">
+      <div class="s-user-av" style="background:rgba(41,128,185,0.2);color:#5dade2" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div>
+      <div class="s-user-name" th:text="${user.fullName}">James Whitmore</div>
+      <div class="s-user-tier" th:text="${user.clientTier} + ' CLIENT'">PLATINUM</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-lbl">MAIN</div>
+      <a href="/client/dashboard" class="nav-item"><span class="nav-icon">⬛</span> Overview</a>
+      <a href="/client/accounts" class="nav-item"><span class="nav-icon">🏦</span> Accounts</a>
+      <a href="/client/transactions" class="nav-item active"><span class="nav-icon">↕</span> Transactions</a>
+      <a href="/client/transfer" class="nav-item"><span class="nav-icon">➤</span> Transfer Funds</a>
+      <div class="nav-section-lbl">WEALTH</div>
+      <a href="/client/investments" class="nav-item"><span class="nav-icon">📈</span> Investments</a>
+      <a href="/client/cards" class="nav-item"><span class="nav-icon">💳</span> Cards</a>
+      <div class="nav-section-lbl">ACCOUNT</div>
+      <a href="/client/notifications" class="nav-item"><span class="nav-icon">🔔</span> Notifications</a>
+      <a href="/client/settings" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
+    </div>
+    <div class="sidebar-bottom"><a href="/logout" class="logout-link">⏏&nbsp;&nbsp; Sign Out</a></div>
+  </div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">Transactions</div>
+      <div class="topbar-right"><div class="topbar-user"><div class="topbar-av" th:text="${#strings.substring(user.fullName,0,2).toUpperCase()}">JW</div><span th:text="${user.fullName}">James</span></div></div>
+    </div>
+    <div class="page-content">
+      <div class="page-heading">Transaction History</div>
+      <p class="page-sub">All your account activity in one place</p>
+
+      <form method="get" action="/client/transactions">
+        <div class="search-bar">
+          <a href="/client/transactions" th:class="'filter-btn ' + (${filter == null} ? 'active' : '')">ALL</a>
+          <a href="/client/transactions?filter=CREDIT" th:class="'filter-btn ' + (${filter == 'CREDIT'} ? 'active' : '')">INCOMING</a>
+          <a href="/client/transactions?filter=DEBIT" th:class="'filter-btn ' + (${filter == 'DEBIT'} ? 'active' : '')">OUTGOING</a>
+          <a href="/client/transactions?filter=PENDING" th:class="'filter-btn ' + (${filter == 'PENDING'} ? 'active' : '')">PENDING</a>
+          <input name="search" type="text" class="form-ctrl search-input" placeholder="🔍  Search transactions..." th:value="${search}">
+          <button type="submit" class="btn btn-outline btn-sm">SEARCH</button>
+        </div>
+      </form>
+
+      <div class="panel panel-no-pad">
+        <table class="data-table">
+          <thead><tr><th>DESCRIPTION</th><th>DATE</th><th>ACCOUNT</th><th>CATEGORY</th><th>STATUS</th><th style="text-align:right">AMOUNT</th></tr></thead>
+          <tbody>
+            <tr th:each="tx : ${transactions}">
+              <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="avatar" th:style="'width:32px;height:32px;font-size:12px;background:' + (${tx.type.name()=='CREDIT'} ? 'rgba(39,174,96,0.15)' : 'rgba(41,128,185,0.15)') + ';color:' + (${tx.type.name()=='CREDIT'} ? 'var(--green)' : '#5dade2')">
+                    <span th:text="${tx.type.name()=='CREDIT'} ? '↓' : '↑'">↑</span>
+                  </div>
+                  <div>
+                    <div style="font-size:13px" th:text="${tx.description}">Description</div>
+                    <div class="text-xs text-muted mono" th:text="'Ref: ' + ${tx.referenceId}">Ref</div>
+                  </div>
+                </div>
+              </td>
+              <td class="text-muted text-sm" th:text="${#temporals.format(tx.createdAt,'MMM dd, yyyy')}">Mar 12</td>
+              <td class="text-muted text-sm mono" th:text="'•••• ' + ${tx.account.accountNumber}">•••• 4821</td>
+              <td class="text-muted text-sm" th:text="${tx.category}">Travel</td>
+              <td>
+                <span th:class="'badge ' + (${tx.status.name()=='COMPLETED'} ? 'badge-green' : (${tx.status.name()=='PENDING'} ? 'badge-orange' : (${tx.status.name()=='DISPUTED'} ? 'badge-purple' : 'badge-red')))"
+                      th:text="${tx.status}">COMPLETED</span>
+              </td>
+              <td style="text-align:right;font-family:Georgia;font-size:14px"
+                  th:class="${tx.type.name()=='CREDIT'} ? 'text-green' : ''"
+                  th:text="(${tx.type.name()=='CREDIT'} ? '+$' : '-$') + ${#numbers.formatDecimal(tx.amount.abs(),1,'COMMA',2,'POINT')}">
+                -$4,280
+              </td>
+            </tr>
+            <tr th:if="${transactions.empty}">
+              <td colspan="6" style="text-align:center;color:var(--muted);padding:40px">No transactions found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
